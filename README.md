@@ -22,6 +22,8 @@ astraut-risk demo
 Example output:
 
 ![Demo](docs/demo.png)
+Example output from `astraut-risk demo`.  
+Runs instantly without API keys or network calls.
 
 ## Quick Install (GitHub)
 
