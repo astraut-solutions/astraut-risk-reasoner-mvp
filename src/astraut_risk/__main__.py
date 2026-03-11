@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import socket
+import sys
 from typing import Dict, List
 
 import typer
@@ -131,6 +133,41 @@ def _get_client() -> Groq:
     return Groq(api_key=api_key)
 
 
+def _check_python_version() -> tuple[bool, str]:
+    version = sys.version_info
+    ok = version >= (3, 9)
+    return ok, f"{version.major}.{version.minor}.{version.micro}"
+
+
+def _check_groq_api_key() -> tuple[bool, str]:
+    key = os.getenv("GROQ_API_KEY", "")
+    if not key:
+        return False, "Missing"
+    masked = f"{key[:6]}...{key[-4:]}" if len(key) > 12 else "Set"
+    return True, masked
+
+
+def _check_internet() -> tuple[bool, str]:
+    try:
+        with socket.create_connection(("api.groq.com", 443), timeout=3):
+            return True, "Reachable (api.groq.com:443)"
+    except OSError as exc:
+        return False, f"Not reachable ({exc.__class__.__name__})"
+
+
+def _check_groq_access() -> tuple[bool, str]:
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return False, "Skipped (missing GROQ_API_KEY)"
+    try:
+        client = Groq(api_key=api_key)
+        models = client.models.list()
+        count = len(models.data) if hasattr(models, "data") else 0
+        return True, f"Authenticated (models visible: {count})"
+    except Exception as exc:  # pragma: no cover - network/credential dependent
+        return False, f"Failed ({exc.__class__.__name__})"
+
+
 @app.command()
 def assess(
     company_description: str = typer.Argument(
@@ -188,6 +225,54 @@ def _render_assessment(content: str) -> None:
             padding=(1, 2),
         )
     )
+
+
+@app.command()
+def doctor() -> None:
+    """Run local diagnostics for runtime and Groq connectivity."""
+    python_ok, python_details = _check_python_version()
+    key_ok, key_details = _check_groq_api_key()
+    internet_ok, internet_details = _check_internet()
+    api_ok, api_details = _check_groq_access()
+
+    checks = [
+        ("Python version", python_ok, python_details),
+        ("GROQ_API_KEY", key_ok, key_details),
+        ("Internet connectivity", internet_ok, internet_details),
+        ("Groq API access", api_ok, api_details),
+    ]
+
+    table = Table(
+        title="Astraut Risk Reasoner Diagnostics",
+        box=box.ROUNDED,
+        show_lines=True,
+        header_style="bold cyan",
+    )
+    table.add_column("Check", style="bold white")
+    table.add_column("Status", justify="center")
+    table.add_column("Details", style="yellow")
+
+    all_ok = True
+    for name, ok, details in checks:
+        status = "✅ PASS" if ok else "❌ FAIL"
+        style = "green" if ok else "red"
+        table.add_row(name, f"[{style}]{status}[/{style}]", details)
+        all_ok = all_ok and ok
+
+    console.print(table)
+    if all_ok:
+        console.print("[bold green]All checks passed.[/bold green]")
+    else:
+        if not key_ok:
+            console.print(
+                "[bold yellow]Some checks failed.[/bold yellow] "
+                "Set `GROQ_API_KEY` and re-run `astraut-risk doctor`."
+            )
+        else:
+            console.print(
+                "[bold yellow]Some checks failed.[/bold yellow] "
+                "Check network/API access and re-run `astraut-risk doctor`."
+            )
 
 
 @app.command()
