@@ -13,7 +13,7 @@ Built as part of the Astraut Solutions research initiative on AI-assisted cyber 
 
 It turns a short description of your company’s tech stack into a practical cyber risk assessment and action plan.
 
-⭐ If you find this tool useful, consider starring the repository to support the project.
+⭐ Star this repo to support the project.
 
 ### Who this tool is for
 
@@ -330,6 +330,7 @@ This ensures documentation always reflects the current CLI behavior.
 ## All Demo Assets
 
 Demo assets are stored in `docs/demo/`.
+Social-optimized share GIF: [`docs/social/demo.gif`](docs/social/demo.gif).
 
 ## Contributing
 
