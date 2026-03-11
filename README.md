@@ -9,10 +9,19 @@ AI-powered cybersecurity risk analysis for SMEs — directly from your terminal.
 ![Demo Assets](https://github.com/astraut-solutions/astraut-risk-reasoner/actions/workflows/demo-assets.yml/badge.svg)
 
 Astraut Risk Reasoner is the first open-source CLI product from **Astraut Solutions**, an independent research group focused on AI, cybersecurity, and responsible automation for SMEs.
+Built as part of the Astraut Solutions research initiative on AI-assisted cyber risk reasoning for small organisations.
+
+It turns a short description of your company’s tech stack into a practical cyber risk assessment and action plan.
+
+⭐ If you find this tool useful, consider starring the repository to support the project.
+
+### Who this tool is for
+
+- Small companies without dedicated security teams
+- Startups building on cloud platforms
+- Developers who want quick security reasoning before audits
 
 See real example outputs below 👇
-
-It helps small teams reason clearly about digital risk and practical next steps before minor weaknesses become incidents.
 
 ## 30-Second Demo
 
@@ -33,7 +42,7 @@ Example output:
 ```bash
 pip install "git+https://github.com/astraut-solutions/astraut-risk-reasoner.git"
 
-astraut-risk assess "We are a 12-person SaaS startup using AWS, Gmail, Stripe and a public API"
+astraut-risk demo
 ```
 
 No signup. No configuration. Just run the command and get a cyber risk analysis instantly.
@@ -41,42 +50,15 @@ No signup. No configuration. Just run the command and get a cyber risk analysis 
 Example output from `astraut-risk demo`.  
 Runs instantly without API keys or network calls.
 
-## Quick Demo
+## Why Astraut Risk Reasoner Exists
 
-Run:
+Small and medium businesses rarely have dedicated security teams.
 
-```bash
-astraut-risk assess "We are a 12 person SaaS startup using AWS, Gmail, Stripe and a public API"
-```
+Most risk frameworks are designed for enterprises and are too complex for small teams.
 
-Example result:
+Astraut Risk Reasoner helps SMEs quickly think through cyber risk using practical Zero Trust principles.
 
-```text
-Risk Score: 8/10 ⚠️
-
-Top Risks
-1. Missing MFA on admin accounts
-2. Public API authentication gaps
-3. Lack of segmentation between environments
-```
-
-## Example
-
-![Astraut Risk Reasoner CLI](docs/example-output.png)
-
-## Quick Install (GitHub)
-
-Install directly from GitHub in one command:
-
-```bash
-pip install "git+https://github.com/astraut-solutions/astraut-risk-reasoner.git"
-```
-
-Then run:
-
-```bash
-astraut-risk --help
-```
+It is part of the Astraut Solutions research project exploring AI-assisted risk reasoning for small organisations.
 
 ## Usage
 
@@ -128,9 +110,44 @@ astraut-risk demo
 astraut-risk doctor
 ```
 
+## Quick Install (GitHub)
+
+Install directly from GitHub in one command:
+
+```bash
+pip install "git+https://github.com/astraut-solutions/astraut-risk-reasoner.git"
+```
+
+Then run:
+
+```bash
+astraut-risk --help
+```
+
+## Quick Demo
+
+Run:
+
+```bash
+astraut-risk assess "We are a 12 person SaaS startup using AWS, Gmail, Stripe and a public API"
+```
+
+Example result:
+
+```text
+Risk Score: 8/10 ⚠️
+
+Top Risks
+1. Missing MFA on admin accounts
+2. Public API authentication gaps
+3. Lack of segmentation between environments
+```
+
 ## Example Output
 
 Here’s exactly what each command produces (real output with Rich formatting):
+
+![Astraut Risk Reasoner CLI](docs/example-output.png)
 
 ### assess
 
@@ -227,16 +244,6 @@ astraut-risk assess "We are a 12-person SaaS startup on AWS using Gmail, Stripe,
 ╰──────────┴─────────────────────────────┴─────────────────────────────┴──────────────────────────────╯
 ```
 
-## Why Astraut Risk Reasoner Exists
-
-Small and medium businesses rarely have dedicated security teams.
-
-Most risk frameworks are designed for enterprises and are too complex for small teams.
-
-Astraut Risk Reasoner helps SMEs quickly think through cyber risk using practical Zero Trust principles.
-
-It is part of the Astraut Solutions research project exploring AI-assisted risk reasoning for small organisations.
-
 ## Commands
 
 - `astraut-risk assess "..."`: AI-assisted risk assessment via Groq.
@@ -319,6 +326,22 @@ Workflow:
 - Updates `latest.gif` used in the README
 
 This ensures documentation always reflects the current CLI behavior.
+
+## All Demo Assets
+
+Demo assets are stored in `docs/demo/`.
+
+## Contributing
+
+Contributions, ideas, and security improvements are welcome.
+
+If you would like to contribute:
+
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+For larger changes, open an issue first to discuss the idea.
 
 ## Disclaimer
 
