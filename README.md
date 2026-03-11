@@ -8,6 +8,7 @@ It helps small teams reason clearly about digital risk and practical next steps 
 ## Example Output
 
 Here’s exactly what each command produces (real output with Rich formatting):
+![Demo](docs/demo.png)
 
 ### assess
 
