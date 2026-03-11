@@ -45,6 +45,20 @@ source .venv/bin/activate  # Linux/macOS
 pip install -e .
 ```
 
+## Quick Install (GitHub)
+
+Install directly from GitHub in one command:
+
+```bash
+pip install "git+https://github.com/astraut-solutions/astraut-risk-reasoner.git"
+```
+
+Then run:
+
+```bash
+astraut-risk --help
+```
+
 ## Configure Groq API Key
 
 Copy the example env file and set your key:
