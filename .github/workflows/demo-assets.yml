@@ -32,8 +32,9 @@ jobs:
       - name: Install asciinema and agg
         run: |
           sudo apt-get update
-          sudo apt-get install -y asciinema
-          python -m pip install asciinema-agg
+          sudo apt-get install -y asciinema cargo
+          cargo install --locked --git https://github.com/asciinema/agg
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Generate demo assets
         run: bash ./scripts/generate_demo_assets.sh
