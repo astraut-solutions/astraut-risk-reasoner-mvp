@@ -36,7 +36,7 @@ jobs:
           python -m pip install asciinema-agg
 
       - name: Generate demo assets
-        run: ./scripts/generate_demo_assets.sh
+        run: bash ./scripts/generate_demo_assets.sh
 
       - name: Commit updated demo assets
         run: |
