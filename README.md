@@ -159,6 +159,15 @@ make format
 make test
 ```
 
+## Web Demo
+
+```bash
+pip install -r requirements.txt
+streamlit run web/app.py
+```
+
+This launches a local browser interface for running assessments, viewing the SME checklist, and reviewing the investment matrix.
+
 ## Roadmap
 
 - [ ] Offline mode with Ollama
