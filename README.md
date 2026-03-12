@@ -159,7 +159,9 @@ make format
 make test
 ```
 
-## Web Demo
+## Live Web Demo
+
+The tool can also run in the browser using Streamlit.
 
 ```bash
 pip install -r requirements.txt
@@ -168,10 +170,21 @@ streamlit run web/app.py
 
 This launches a local browser interface for running assessments, viewing the SME checklist, and reviewing the investment matrix.
 
+For Streamlit Community Cloud deployment:
+
+1. Push repository to GitHub.
+2. Go to https://streamlit.io/cloud.
+3. Connect your GitHub repository.
+4. Set entry point to `web/app.py`.
+5. Add environment variable `GROQ_API_KEY`.
+
+## Web Interface
+
+Non-technical users can run the tool directly in a browser to perform risk assessments, review the security checklist, and inspect the investment matrix without using CLI commands.
+
 ## Roadmap
 
 - [ ] Offline mode with Ollama
-- [ ] Web interface
 - [ ] CSV export
 - [ ] Integration with Easy Risk Register
 - [ ] SME threat scenario library

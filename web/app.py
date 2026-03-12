@@ -249,7 +249,7 @@ with risk_tab:
             )
             st.table(_table_from_list_text(action_plan))
 
-            st.header("Investment Priorities")
+            st.header("Investment Matrix")
             priorities = _get_section(
                 sections,
                 [
@@ -265,7 +265,7 @@ with risk_tab:
                     st.markdown(content)
 
         except MissingApiKeyError:
-            st.error("Missing GROQ_API_KEY. Set it in your environment or .env file.")
+            st.error("LLM API key not configured.")
         except InvalidInputError as exc:
             st.error(str(exc))
         except (LLMAPIError, NetworkError) as exc:
