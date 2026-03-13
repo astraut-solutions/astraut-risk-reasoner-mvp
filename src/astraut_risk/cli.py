@@ -12,9 +12,15 @@ from pathlib import Path
 import typer
 from groq import Groq
 from rich import box
+from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
+from .assessment_formatter import (
+    compose_assessment_markdown,
+    extract_markdown_sections as shared_extract_markdown_sections,
+)
+from .assessment_store import load_cached_result, save_cached_result
 from .checklist import format_checklist_markdown
 from .config import (
     DEFAULT_MODEL,
@@ -24,6 +30,7 @@ from .config import (
     mask_key,
 )
 from .matrix import MATRIX_ROWS
+from .models import RiskAssessment
 from .output import (
     console,
     render_assessment,
@@ -33,6 +40,12 @@ from .output import (
     render_info,
     render_input_panel,
     render_matrix,
+)
+from .risk_engine import assess_company_risk
+from .framework_mapping import (
+    list_framework_names,
+    load_framework_mappings,
+    resolve_framework_selector,
 )
 from .reasoning import (
     InvalidInputError,
@@ -44,10 +57,13 @@ from .reasoning import (
     validate_company_description,
     validate_model,
 )
+from .scenarios import SCENARIOS, get_scenario_description, list_scenarios
 
 app = typer.Typer(
     help="Astraut Risk Reasoner: practical cybersecurity risk guidance for SMEs."
 )
+scenario_app = typer.Typer(help="Run built-in SME scenario examples.")
+app.add_typer(scenario_app, name="scenario")
 load_environment()
 
 DEMO_INPUT = (
@@ -126,19 +142,7 @@ def _get_client() -> Groq:
 
 
 def _extract_markdown_sections(content: str) -> dict[str, str]:
-    sections: dict[str, str] = {}
-    current = "full_response"
-    lines: list[str] = []
-    for raw_line in content.splitlines():
-        line = raw_line.strip()
-        if line.startswith("## "):
-            sections[current] = "\n".join(lines).strip()
-            current = line[3:].strip().lower().replace(" ", "_")
-            lines = []
-        else:
-            lines.append(raw_line)
-    sections[current] = "\n".join(lines).strip()
-    return {k: v for k, v in sections.items() if v}
+    return shared_extract_markdown_sections(content)
 
 
 def _export_assessment_csv(
@@ -179,21 +183,45 @@ def _export_assessment_json(
     return path
 
 
-def _parse_export_formats(export: str) -> list[str]:
-    if not export.strip():
-        return []
-    formats = [fmt.strip().lower() for fmt in export.split(",") if fmt.strip()]
+def _export_assessment_markdown(content: str, output_path: str | None = None) -> str:
+    path = output_path or (
+        f"astraut_assessment_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+    )
+    Path(path).write_text(content, encoding="utf-8")
+    return path
+
+
+def _parse_export_request(export: str, output: str) -> tuple[list[str], str]:
+    export_value = (export or "").strip()
+    output_value = (output or "").strip()
+    allowed = {"csv", "json", "md"}
+
+    if not export_value:
+        if output_value:
+            ext = Path(output_value).suffix.lower().lstrip(".")
+            if ext in allowed:
+                return [ext], output_value
+        return [], output_value
+
+    if (
+        "," not in export_value
+        and export_value.lower() not in allowed
+        and Path(export_value).suffix.lower().lstrip(".") in allowed
+    ):
+        return [Path(export_value).suffix.lower().lstrip(".")], export_value
+
+    formats = [fmt.strip().lower() for fmt in export_value.split(",") if fmt.strip()]
     unique: list[str] = []
     for fmt in formats:
         if fmt not in unique:
             unique.append(fmt)
-    invalid = [fmt for fmt in unique if fmt not in {"csv", "json"}]
+    invalid = [fmt for fmt in unique if fmt not in allowed]
     if invalid:
         bad = ", ".join(invalid)
         raise InvalidInputError(
-            f"Invalid export format(s): {bad}. Supported values: csv, json"
+            f"Invalid export format(s): {bad}. Supported values: csv, json, md"
         )
-    return unique
+    return unique, output_value
 
 
 def _resolve_output_path(output: str, fmt: str, multi: bool) -> str | None:
@@ -204,6 +232,110 @@ def _resolve_output_path(output: str, fmt: str, multi: bool) -> str | None:
     path = Path(output)
     stem = path.with_suffix("")
     return f"{stem}.{fmt}"
+
+
+
+
+def _format_structured_assessment(
+    assessment: RiskAssessment, llm_explanation: str | None = None
+) -> str:
+    return compose_assessment_markdown(assessment, llm_explanation)
+
+
+def _run_assessment_flow(
+    company_description: str,
+    model: str,
+    export: str,
+    output: str,
+    use_cache: bool = False,
+    refresh_cache: bool = False,
+) -> None:
+    validate_company_description(company_description)
+    validate_model(model)
+    export_formats, resolved_output = _parse_export_request(export, output)
+    deterministic_assessment = assess_company_risk(company_description)
+
+    render_input_panel(company_description)
+
+    llm_explanation: str
+    cache_path_text = ""
+    cached = None
+    if use_cache and not refresh_cache:
+        cached = load_cached_result(
+            company_description=company_description,
+            model=model,
+            assessment=deterministic_assessment,
+        )
+        if cached and cached.get("llm_explanation"):
+            llm_explanation = str(cached["llm_explanation"])
+            cache_path_text = f"assessments/{cached['cache_key']}.json"
+            render_info("Cache Hit", f"Loaded saved assessment from `{cache_path_text}`.")
+        else:
+            cached = None
+
+    if not cached:
+        client = _get_client()
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[bold yellow]Reasoning about your risk posture...[/bold yellow]"),
+            transient=True,
+            console=console,
+        ) as progress:
+            progress.add_task("llm", total=None)
+            llm_explanation = request_completion(
+                client=client,
+                messages=build_assessment_messages(
+                    company_description, assessment=deterministic_assessment
+                ),
+                model=model,
+            )
+
+    content = _format_structured_assessment(deterministic_assessment, llm_explanation)
+
+    if use_cache:
+        saved_path = save_cached_result(
+            company_description=company_description,
+            model=model,
+            assessment=deterministic_assessment,
+            llm_explanation=llm_explanation,
+            assessment_markdown=content,
+        )
+        render_info("Cache Saved", f"Saved assessment cache at `{saved_path}`.")
+
+    render_assessment(content)
+
+    if not export_formats:
+        return
+
+    multi = len(export_formats) > 1
+    exported_files: list[str] = []
+    for fmt in export_formats:
+        out_path = _resolve_output_path(resolved_output, fmt, multi)
+        if fmt == "csv":
+            exported = _export_assessment_csv(
+                company_description=company_description,
+                model=model,
+                content=content,
+                output_path=out_path,
+            )
+        elif fmt == "json":
+            exported = _export_assessment_json(
+                company_description=company_description,
+                model=model,
+                content=content,
+                output_path=out_path,
+            )
+        else:
+            exported = _export_assessment_markdown(
+                content=content,
+                output_path=out_path,
+            )
+        exported_files.append(exported)
+    render_info(
+        "Export Complete",
+        "[bold green]Exported assessment files:[/bold green] "
+        + ", ".join(exported_files),
+    )
 
 
 @app.command()
@@ -220,63 +352,34 @@ def assess(
     export: str = typer.Option(
         "",
         "--export",
-        help="Export formats for results. Supported: csv, json, or csv,json",
+        help="Export format(s) (`csv`, `json`, `md`) or a path like `report.md`.",
     ),
     output: str = typer.Option(
         "",
         "--output",
         help="Output path for exported file(s). For multi-format exports, extensions are auto-appended.",
     ),
+    use_cache: bool = typer.Option(
+        False,
+        "--use-cache",
+        help="Reuse and persist assessment results in local cache for identical deterministic findings.",
+    ),
+    refresh_cache: bool = typer.Option(
+        False,
+        "--refresh-cache",
+        help="Force a fresh LLM call and overwrite cache entry (implies --use-cache behavior).",
+    ),
 ) -> None:
     """Assess risk from a company description."""
     try:
-        validate_company_description(company_description)
-        validate_model(model)
-        export_formats = _parse_export_formats(export)
-
-        render_input_panel(company_description)
-        client = _get_client()
-
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[bold yellow]Reasoning about your risk posture...[/bold yellow]"),
-            transient=True,
-            console=console,
-        ) as progress:
-            progress.add_task("llm", total=None)
-            content = request_completion(
-                client=client,
-                messages=build_assessment_messages(company_description),
-                model=model,
-            )
-
-        render_assessment(content)
-
-        if export_formats:
-            multi = len(export_formats) > 1
-            exported_files: list[str] = []
-            for fmt in export_formats:
-                out_path = _resolve_output_path(output, fmt, multi)
-                if fmt == "csv":
-                    exported = _export_assessment_csv(
-                        company_description=company_description,
-                        model=model,
-                        content=content,
-                        output_path=out_path,
-                    )
-                else:
-                    exported = _export_assessment_json(
-                        company_description=company_description,
-                        model=model,
-                        content=content,
-                        output_path=out_path,
-                    )
-                exported_files.append(exported)
-            render_info(
-                "Export Complete",
-                "[bold green]Exported assessment files:[/bold green] "
-                + ", ".join(exported_files),
-            )
+        _run_assessment_flow(
+            company_description,
+            model,
+            export,
+            output,
+            use_cache=use_cache or refresh_cache,
+            refresh_cache=refresh_cache,
+        )
 
     except MissingApiKeyError as exc:
         render_error(
@@ -301,6 +404,65 @@ def assess(
             str(exc),
             hint="Verify GROQ_API_KEY validity and model availability.",
         )
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def inspect(
+    company_description: str = typer.Argument(
+        ...,
+        help="Natural-language description of your company setup and security posture.",
+    )
+) -> None:
+    """Inspect deterministic signal matching and score contributions."""
+    try:
+        validate_company_description(company_description)
+        assessment = assess_company_risk(company_description)
+        render_input_panel(company_description)
+
+        signal_table = Table(
+            title="Deterministic Risk Signals",
+            box=box.ROUNDED,
+            show_lines=True,
+            header_style="bold cyan",
+        )
+        signal_table.add_column("Signal", style="bold white")
+        signal_table.add_column("Category", style="green")
+        signal_table.add_column("Weight", justify="right", style="yellow")
+        signal_table.add_column("Matched Phrases", style="magenta")
+
+        if assessment.matched_signals:
+            for signal in assessment.matched_signals:
+                signal_table.add_row(
+                    signal.label,
+                    signal.category,
+                    f"+{signal.weight}",
+                    ", ".join(signal.matched_phrases) or "-",
+                )
+        else:
+            signal_table.add_row("No matched signals", "-", "0", "-")
+
+        console.print(signal_table)
+
+        gaps = (
+            "\n".join(f"- {gap}" for gap in assessment.control_gaps)
+            if assessment.control_gaps
+            else "- No control gaps detected from current input."
+        )
+        console.print(
+            Panel.fit(
+                (
+                    f"[bold]Calculated total score:[/bold] {assessment.overall_score}/100 "
+                    f"({assessment.risk_level})\n\n"
+                    "[bold]Detected control gaps:[/bold]\n"
+                    f"{gaps}"
+                ),
+                title="Deterministic Summary",
+                border_style="cyan",
+            )
+        )
+    except InvalidInputError as exc:
+        render_error("Invalid Input", str(exc))
         raise typer.Exit(code=1)
 
 
@@ -443,6 +605,142 @@ def checklist() -> None:
 def matrix() -> None:
     """Show the Cybersecurity Investment Strategy Matrix 2025."""
     render_matrix(MATRIX_ROWS)
+
+
+@app.command()
+def controls(
+    framework: str = typer.Argument(
+        "",
+        help="Optional framework filter: cis, nist, or owasp.",
+    ),
+) -> None:
+    """List enabled control-framework mappings."""
+    framework_names = list_framework_names()
+    if not framework.strip():
+        lines = "\n".join(f"- {name}" for name in framework_names)
+        render_info(
+            "Framework mappings enabled",
+            f"{lines}\n\nTry `astraut-risk controls cis` for a filtered list.",
+        )
+        return
+
+    selected = resolve_framework_selector(framework)
+    if not selected:
+        render_error(
+            "Invalid Framework",
+            f"Unknown framework '{framework}'.",
+            hint="Use one of: cis, nist, owasp.",
+        )
+        raise typer.Exit(code=1)
+
+    signal_map = load_framework_mappings()
+    rows: list[str] = []
+    for signal_id in sorted(signal_map.keys()):
+        refs = [ref for ref in signal_map[signal_id] if ref.framework == selected]
+        if not refs:
+            continue
+        for ref in refs:
+            label = ref.control_id
+            if ref.title:
+                label = f"{label} - {ref.title}"
+            detail = f"{label}: {ref.description}" if ref.description else label
+            rows.append(f"- {signal_id}: {detail}")
+
+    if not rows:
+        render_info("Framework mappings", f"No mappings found for {selected}.")
+        return
+    render_info(f"{selected} control mappings", "\n".join(rows))
+
+
+@scenario_app.command("list")
+def scenario_list() -> None:
+    """List built-in SME scenarios."""
+    table = Table(
+        title="Built-in SME Scenarios",
+        box=box.ROUNDED,
+        header_style="bold cyan",
+    )
+    table.add_column("Scenario ID", style="bold white")
+    table.add_column("Label", style="green")
+    for scenario_id, label in list_scenarios():
+        table.add_row(scenario_id, label)
+    console.print(table)
+
+
+@scenario_app.command("run")
+def scenario_run(
+    scenario_id: str = typer.Argument(..., help="Scenario id (e.g. saas_startup)."),
+    model: str = typer.Option(
+        DEFAULT_MODEL,
+        "--model",
+        help="Groq model to use (currently supported: llama-3.3-70b-versatile).",
+    ),
+    export: str = typer.Option(
+        "",
+        "--export",
+        help="Export format(s) (`csv`, `json`, `md`) or a path like `report.md`.",
+    ),
+    output: str = typer.Option(
+        "",
+        "--output",
+        help="Output path for exported file(s). For multi-format exports, extensions are auto-appended.",
+    ),
+    use_cache: bool = typer.Option(
+        False,
+        "--use-cache",
+        help="Reuse and persist assessment results in local cache for identical deterministic findings.",
+    ),
+    refresh_cache: bool = typer.Option(
+        False,
+        "--refresh-cache",
+        help="Force a fresh LLM call and overwrite cache entry (implies --use-cache behavior).",
+    ),
+) -> None:
+    """Run an assessment against a built-in scenario."""
+    description = get_scenario_description(scenario_id)
+    if not description:
+        known = ", ".join(sorted(SCENARIOS.keys()))
+        render_error(
+            "Unknown Scenario",
+            f"Scenario '{scenario_id}' not found.",
+            hint=f"Use `astraut-risk scenario list`. Available: {known}",
+        )
+        raise typer.Exit(code=1)
+
+    console.print(f"[bold cyan]Scenario:[/bold cyan] {scenario_id}")
+    try:
+        _run_assessment_flow(
+            description,
+            model,
+            export,
+            output,
+            use_cache=use_cache or refresh_cache,
+            refresh_cache=refresh_cache,
+        )
+    except MissingApiKeyError as exc:
+        render_error(
+            "Configuration Error",
+            str(exc),
+            hint="Copy .env.example to .env and set GROQ_API_KEY.",
+        )
+        raise typer.Exit(code=1)
+    except InvalidInputError as exc:
+        render_error("Invalid Input", str(exc))
+        raise typer.Exit(code=1)
+    except NetworkError as exc:
+        render_error(
+            "Network Error",
+            str(exc),
+            hint="Check internet connectivity and retry.",
+        )
+        raise typer.Exit(code=1)
+    except LLMAPIError as exc:
+        render_error(
+            "LLM API Error",
+            str(exc),
+            hint="Verify GROQ_API_KEY validity and model availability.",
+        )
+        raise typer.Exit(code=1)
 
 
 def main() -> None:

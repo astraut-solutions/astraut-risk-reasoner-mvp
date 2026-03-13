@@ -1,0 +1,20 @@
+no_mfa:
+  control: "OWASP A07:2021"
+  title: "Identification and Authentication Failures"
+  description: "Authentication weaknesses increase account takeover risk."
+public_api:
+  control: "OWASP API1:2023"
+  title: "Broken Object Level Authorization"
+  description: "Broken object level authorization can expose API data and actions."
+no_logging:
+  control: "OWASP A09:2021"
+  title: "Security Logging and Monitoring Failures"
+  description: "Security logging and monitoring failures delay detection."
+no_alerting:
+  control: "OWASP A09:2021"
+  title: "Security Logging and Monitoring Failures"
+  description: "Without alerting, active attacks may go unnoticed."
+unpatched_dependencies:
+  control: "OWASP A06:2021"
+  title: "Vulnerable and Outdated Components"
+  description: "Vulnerable and outdated components increase exploitability."

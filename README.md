@@ -1,21 +1,13 @@
 # Astraut Risk Reasoner
 
-AI-powered cybersecurity risk analysis for SMEs from the terminal.
+AI-assisted cybersecurity risk reasoning for SMEs, now with deterministic control scoring.
 
 ![MIT License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![CLI Tool](https://img.shields.io/badge/type-CLI-orange)
 ![Security](https://img.shields.io/badge/domain-cybersecurity-red)
 
-Astraut Risk Reasoner helps small teams translate practical security research into clear, actionable decisions.
-
-## Why This Tool Exists
-
-SMEs rarely have dedicated security teams.
-
-Most risk frameworks are designed for large enterprises.
-
-Astraut Risk Reasoner turns practical cybersecurity research into a simple CLI that helps small teams think clearly about cyber risk before incidents happen.
+Astraut Risk Reasoner helps small teams turn practical security signals into actionable priorities.
 
 ## Quick Install
 
@@ -29,7 +21,7 @@ pip install "git+https://github.com/astraut-solutions/astraut-risk-reasoner.git"
 astraut-risk assess "12-person SaaS company on AWS"
 ```
 
-If you want output without API keys or network calls:
+Without API keys/network calls:
 
 ```bash
 astraut-risk demo
@@ -37,12 +29,18 @@ astraut-risk demo
 
 ## Commands
 
-- `astraut-risk assess "..."`: Run AI-assisted risk assessment via Groq.
-- `astraut-risk assess "..." --export csv`: Export assessment to CSV.
-- `astraut-risk assess "..." --export csv,json`: Export assessment to CSV and JSON.
+- `astraut-risk assess "..."`: Deterministic baseline scoring + LLM explanations.
+- `astraut-risk assess "..." --use-cache`: Reuse/persist saved results for identical assessments.
+- `astraut-risk assess "..." --export report.json`: Export full assessment report as JSON.
+- `astraut-risk assess "..." --export report.md`: Export final rendered report as Markdown.
+- `astraut-risk inspect "..."`: Deterministic analysis only (signals, weights, control gaps).
+- `astraut-risk controls`: Show enabled CIS/NIST/OWASP framework mappings.
+- `astraut-risk controls cis|nist|owasp`: Show mappings filtered to one framework.
 - `astraut-risk checklist`: Show practical SME baseline checklist.
 - `astraut-risk matrix`: Show cybersecurity investment matrix.
 - `astraut-risk explain <topic>`: Explain a cybersecurity concept (e.g., `mfa`).
+- `astraut-risk scenario list`: List built-in SME scenarios.
+- `astraut-risk scenario run saas_startup`: Run a built-in scenario assessment.
 - `astraut-risk demo`: Show static built-in output with no API key.
 - `astraut-risk doctor`: Run environment and connectivity checks.
 
@@ -58,85 +56,92 @@ Set:
 GROQ_API_KEY=your_real_key_here
 ```
 
-## Example Output
+## Why this is different
 
-### assess
+Astraut Risk Reasoner now combines:
 
-```text
-$ astraut-risk assess "12-person SaaS company on AWS"
-╭────────────────────────────────── Astraut Risk Reasoner ──────────────────────────────────╮
-│ Input: 12-person SaaS company on AWS                                                       │
-╰─────────────────────────────────────────────────────────────────────────────────────────────╯
-╭────────────────────────────────── Risk Assessment Result ──────────────────────────────────╮
-│ ## Overall Risk Score                                                                       │
-│ 7/10 ⚠️                                                                                     │
-│                                                                                             │
-│ ## Top 3 Risks                                                                              │
-│ 1. Privileged account takeover risk from weak MFA coverage.                                 │
-│ 2. API abuse risk from incomplete authentication and throttling.                            │
-│ 3. Over-broad access policies increase blast radius.                                        │
-│                                                                                             │
-│ ## Personalized Recommendations (Zero Trust first)                                          │
-│ - Enforce MFA on admin and cloud accounts first.                                            │
-│ - Segment admin access and tighten IAM privileges.                                          │
-│ - Add centralized logging and alerting for auth anomalies.                                  │
-╰─────────────────────────────────────────────────────────────────────────────────────────────╯
+- deterministic SME control scoring
+- explainable risk mapping
+- AI-assisted plain-English recommendations
+
+This gives SMEs a consistent baseline score while still getting practical narrative guidance.
+
+It also maps detected signals to control frameworks (CIS Controls, NIST CSF, OWASP) for stronger audit-readiness and trust.
+
+## Control Framework Mapping
+
+Detected risks are mapped to widely used security frameworks including:
+
+- CIS Critical Security Controls
+- NIST Cybersecurity Framework
+- OWASP Top 10
+
+## How scoring works
+
+Base score generation is deterministic and rule-based:
+
+1. Parse company description for known SME control-risk signals (e.g., no MFA, flat network, no logging).
+2. Apply fixed signal weights.
+3. Compute total score and risk level.
+4. Map matched signals to explainable control guidance.
+
+The LLM receives these structured findings and expands them into clear recommendations, priorities, and 7-day actions. The LLM does not generate the base score.
+
+## Consistency across interfaces
+
+The CLI and Web UI share the same deterministic risk engine and assessment renderer.
+This guarantees identical baseline findings (risk score, detected gaps, and risk level).
+AI is used only to expand and explain these findings in plain language.
+
+Result: consistent security conclusions with flexible narrative explanations.
+When caching is enabled, results are stored under `assessments/` (with timestamped history in `assessments/history/`).
+
+## Example scenarios
+
+```bash
+astraut-risk scenario list
+astraut-risk scenario run saas_startup
+astraut-risk inspect "12-person SaaS startup on AWS with no MFA"
 ```
 
-### checklist
+## Trust & limits
 
-```text
-$ astraut-risk checklist
-╭────────────────────────────────── SME Security Checklist ──────────────────────────────────╮
-│ • [ ] Enable MFA for all admin, cloud, email, finance, and code-repo accounts.             │
-│ • [ ] Define least-privilege access and remove stale users every month.                     │
-│ • [ ] Segment production, staging, and internal admin networks.                             │
-│ • [ ] Back up critical systems daily and test restore quarterly.                            │
-╰──────────────────────────────── Practical baseline controls ────────────────────────────────╯
-```
+- Useful for early-stage risk thinking and prioritization.
+- Not a replacement for a professional cybersecurity audit.
+- Deterministic signals improve consistency and transparency.
+- LLM output adds explanation and practical guidance, not core scoring.
 
-### matrix
-
-```text
-$ astraut-risk matrix
-                             Cybersecurity Investment Strategy Matrix 2025
-╭──────────┬─────────────────────────────┬─────────────────────────────┬──────────────────────────────╮
-│ Priority │ Investment Focus            │ Why Now                     │ SME Examples                 │
-├──────────┼─────────────────────────────┼─────────────────────────────┼──────────────────────────────┤
-│ 1        │ MFA + Segmentation          │ Highest risk reduction      │ MFA for admin/email/cloud;   │
-│          │                             │ per dollar for SMEs.        │ network and role segmentation│
-╰──────────┴─────────────────────────────┴─────────────────────────────┴──────────────────────────────╯
-```
-
-## How It Works
+## How it works
 
 ```text
 User input
   ↓
-Typer CLI
+Deterministic SME risk engine (rule-based)
   ↓
-Risk reasoning prompt
+Structured findings (score, matched signals, control gaps)
   ↓
-Groq LLM
+LLM explanation + prioritization
   ↓
-Structured output
-  ↓
-Rich terminal rendering
+CLI / Streamlit output
 ```
 
-## Project Structure
+## Project structure
 
 ```text
 src/astraut_risk/
   cli.py
   reasoning.py
+  risk_engine.py
+  control_map.py
+  scenarios.py
+  models.py
   output.py
   checklist.py
   matrix.py
   config.py
 ```
 
-## Terminal Screenshots
+## Terminal screenshots
 
 Live terminal capture:
 
@@ -145,10 +150,6 @@ Live terminal capture:
 Static screenshot:
 
 ![CLI Screenshot](docs/example-output.png)
-
-## Security Notice
-
-This tool provides general guidance and does not replace professional cybersecurity assessment.
 
 ## Development
 
@@ -161,33 +162,12 @@ make test
 
 ## Live Web Demo
 
-The tool can also run in the browser using Streamlit.
-
 ```bash
 pip install -r requirements.txt
 streamlit run web/app.py
 ```
 
-This launches a local browser interface for running assessments, viewing the SME checklist, and reviewing the investment matrix.
-
-For Streamlit Community Cloud deployment:
-
-1. Push repository to GitHub.
-2. Go to https://streamlit.io/cloud.
-3. Connect your GitHub repository.
-4. Set entry point to `web/app.py`.
-5. Add environment variable `GROQ_API_KEY`.
-
-## Web Interface
-
-Non-technical users can run the tool directly in a browser to perform risk assessments, review the security checklist, and inspect the investment matrix without using CLI commands.
-
-## Roadmap
-
-- [ ] Offline mode with Ollama
-- [ ] CSV export
-- [ ] Integration with Easy Risk Register
-- [ ] SME threat scenario library
+The web interface supports deterministic + LLM-assisted assessment, checklist view, matrix view, and built-in scenario examples.
 
 ## Contributing
 
