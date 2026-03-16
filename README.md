@@ -15,12 +15,11 @@ astraut-risk assess "We are a 12-person SaaS startup using AWS, Gmail and Stripe
 Result:
 
 ```text
-Risk Score: 67 / 100
+Risk Score: 24 / 100
 
 Top Risks
-- Missing MFA
-- Public API exposure
-- Insufficient logging
+- Internet-facing SaaS footprint
+- Baseline controls not explicitly stated
 ```
 
 Output includes:
@@ -68,9 +67,13 @@ astraut-risk demo
 ## Commands
 
 - `astraut-risk assess "..."`: Deterministic baseline scoring + LLM explanations.
+- `astraut-risk assess "..." --model llama-3.3-70b-versatile`: Select the supported Groq model.
 - `astraut-risk assess "..." --use-cache`: Reuse/persist saved results for identical assessments.
+- `astraut-risk assess "..." --refresh-cache`: Force a fresh LLM call and refresh cache entry.
 - `astraut-risk assess "..." --export report.json`: Export full assessment report as JSON.
 - `astraut-risk assess "..." --export report.md`: Export final rendered report as Markdown.
+- `astraut-risk assess "..." --export report.csv`: Export assessment sections as CSV.
+- `astraut-risk assess "..." --export json,md --output reports/assessment`: Export multiple formats with auto-appended extensions.
 - `astraut-risk inspect "..."`: Deterministic analysis only (signals, weights, control gaps).
 - `astraut-risk controls`: Show enabled CIS/NIST/OWASP framework mappings.
 - `astraut-risk controls cis|nist|owasp`: Show mappings filtered to one framework.
@@ -81,6 +84,32 @@ astraut-risk demo
 - `astraut-risk scenario run saas_startup`: Run a built-in scenario assessment.
 - `astraut-risk demo`: Show static built-in output with no API key.
 - `astraut-risk doctor`: Run environment and connectivity checks.
+
+### Full command examples
+
+```bash
+astraut-risk assess "We are a 12-person SaaS startup using AWS, Gmail, Stripe and GitHub"
+astraut-risk assess "12-person SaaS on AWS with public API" --use-cache
+astraut-risk assess "12-person SaaS on AWS with public API" --refresh-cache
+astraut-risk assess "12-person SaaS on AWS with public API" --model llama-3.3-70b-versatile
+astraut-risk assess "12-person SaaS on AWS with public API" --export report.json
+astraut-risk assess "12-person SaaS on AWS with public API" --export report.md
+astraut-risk assess "12-person SaaS on AWS with public API" --export report.csv
+astraut-risk assess "12-person SaaS on AWS with public API" --export json,md --output reports/assessment
+
+astraut-risk inspect "We are a 12-person SaaS startup using AWS, Gmail, Stripe and GitHub"
+astraut-risk explain mfa
+astraut-risk doctor
+astraut-risk demo
+astraut-risk checklist
+astraut-risk matrix
+astraut-risk controls
+astraut-risk controls cis
+astraut-risk controls nist
+astraut-risk controls owasp
+astraut-risk scenario list
+astraut-risk scenario run saas_startup
+```
 
 ## Configure API Key
 

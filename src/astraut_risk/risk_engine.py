@@ -178,6 +178,62 @@ _SIGNAL_RULES: tuple[SignalRule, ...] = (
 )
 
 
+def _append_inferred_baseline_signals(
+    normalized_text: str,
+    matched_signals: list[RiskSignal],
+) -> None:
+    matched_ids = {signal.signal_id for signal in matched_signals}
+
+    saas_context = bool(
+        re.search(
+            r"\bsaas\b|\bstartup\b|\bweb\s*app\b|\bcustomer[\s-]*facing\b",
+            normalized_text,
+            flags=re.IGNORECASE,
+        )
+    )
+    if not saas_context:
+        return
+
+    if "internet_facing_saas" not in matched_ids:
+        mapping = CONTROL_MAP["internet_facing_saas"]
+        matched_signals.append(
+            RiskSignal(
+                signal_id="internet_facing_saas",
+                label="Internet-facing SaaS footprint",
+                category="Infrastructure / Cloud",
+                weight=14,
+                matched_phrases=["saas/startup footprint implies external exposure"],
+                why_it_matters=mapping["why_it_matters"],
+                framework_refs=[],
+            )
+        )
+        matched_ids.add("internet_facing_saas")
+
+    has_identity_signal = bool(
+        re.search(r"\bmfa\b|\bsso\b|\bleast\s+privilege\b", normalized_text, flags=re.IGNORECASE)
+    )
+    has_detection_signal = bool(
+        re.search(r"\blog(?:ging)?\b|\bmonitor(?:ing)?\b|\balert(?:ing|s)?\b", normalized_text, flags=re.IGNORECASE)
+    )
+    has_resilience_signal = bool(
+        re.search(r"\bbackup(?:s)?\b|\bincident\s+response\b|\brecovery\b", normalized_text, flags=re.IGNORECASE)
+    )
+    if not (has_identity_signal and has_detection_signal and has_resilience_signal):
+        if "baseline_controls_unspecified" not in matched_ids:
+            mapping = CONTROL_MAP["baseline_controls_unspecified"]
+            matched_signals.append(
+                RiskSignal(
+                    signal_id="baseline_controls_unspecified",
+                    label="Baseline controls not explicitly stated",
+                    category="Security Governance",
+                    weight=10,
+                    matched_phrases=["missing explicit evidence for baseline controls"],
+                    why_it_matters=mapping["why_it_matters"],
+                    framework_refs=[],
+                )
+            )
+
+
 def _find_matches(text: str, patterns: tuple[str, ...]) -> list[str]:
     matches: list[str] = []
     for pattern in patterns:
@@ -231,6 +287,7 @@ def assess_company_risk(company_description: str) -> RiskAssessment:
             )
         )
 
+    _append_inferred_baseline_signals(normalized, matched_signals)
     matched_signals.sort(key=lambda item: item.weight, reverse=True)
     total_score = max(0, min(100, sum(signal.weight for signal in matched_signals)))
 

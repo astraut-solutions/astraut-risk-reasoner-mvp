@@ -46,6 +46,16 @@ def test_score_within_expected_bounds() -> None:
     assert 0 <= assessment.overall_score <= 100
 
 
+def test_saas_profile_without_control_details_gets_baseline_signal() -> None:
+    assessment = assess_company_risk(
+        "We are a 12-person SaaS startup using AWS, Gmail, Stripe and GitHub"
+    )
+    assert assessment.overall_score > 0
+    assert any(
+        signal.signal_id == "internet_facing_saas" for signal in assessment.matched_signals
+    )
+
+
 def test_inspect_command_works() -> None:
     result = runner.invoke(app, ["inspect", "12-person SaaS startup with no MFA and public API"])
     assert result.exit_code == 0

@@ -194,7 +194,7 @@ def _run_assessment(
     *,
     use_cache: bool,
     refresh_cache: bool,
-) -> str:
+) -> tuple[str, int, str]:
     validate_company_description(company_description)
     deterministic = assess_company_risk(company_description)
 
@@ -229,10 +229,11 @@ def _run_assessment(
                 ),
             )
 
-    return _compose_web_assessment_markdown(
+    content = _compose_web_assessment_markdown(
         deterministic,
         llm_explanation,
     )
+    return content, deterministic.overall_score, deterministic.risk_level
 
 
 st.set_page_config(page_title="Astraut Risk Reasoner", layout="wide")
@@ -281,7 +282,7 @@ with risk_tab:
     if st.button("Assess Risk", type="primary"):
         try:
             with st.spinner("Analyzing environment..."):
-                content = _run_assessment(
+                content, overall_score, risk_level = _run_assessment(
                     description,
                     use_cache=use_cached_assessments,
                     refresh_cache=refresh_cached_assessment,
@@ -289,12 +290,8 @@ with risk_tab:
 
             sections = _extract_sections(content)
 
-            risk_score_text = _get_section(
-                sections,
-                ["Overall Risk Score", "Risk Score"],
-            )
             st.header("Risk Score")
-            st.markdown(_risk_score_from_text(risk_score_text, content))
+            st.markdown(f"{overall_score}/100 ({risk_level})")
 
             st.header("Top Risks")
             top_risks = _get_section(sections, ["Top 3 Risks", "Top Risks"])

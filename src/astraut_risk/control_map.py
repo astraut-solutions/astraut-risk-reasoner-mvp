@@ -171,4 +171,20 @@ CONTROL_MAP: dict[str, dict[str, str]] = {
         "investment_bucket": "Secure SDLC",
         "recommendation": "Harden pipelines as production-critical infrastructure.",
     },
+    "internet_facing_saas": {
+        "category": "Infrastructure / Cloud",
+        "why_it_matters": "Customer-facing SaaS platforms are continuously exposed to internet threats.",
+        "first_action": "Document internet-facing assets and enforce baseline hardening controls.",
+        "seven_day_action": "Review exposed services and verify auth, rate limiting, and patch status.",
+        "investment_bucket": "Detection + Response",
+        "recommendation": "Treat external attack surface as a standing risk and monitor it continuously.",
+    },
+    "baseline_controls_unspecified": {
+        "category": "Security Governance",
+        "why_it_matters": "Missing control details creates uncertainty and can hide high-impact gaps.",
+        "first_action": "Confirm baseline controls for MFA, logging, backups, and incident response.",
+        "seven_day_action": "Run a quick baseline checklist and record control owners and evidence.",
+        "investment_bucket": "MFA + Segmentation",
+        "recommendation": "Capture minimum-control evidence before assuming a low-risk posture.",
+    },
 }
