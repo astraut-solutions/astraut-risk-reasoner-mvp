@@ -1,6 +1,44 @@
 # Astraut Risk Reasoner
 
-AI-assisted cybersecurity risk reasoning for SMEs, now with deterministic control scoring.
+Turn a short description of a company into a cybersecurity risk assessment.
+
+Describe your stack. Get a risk score, top threats, and a 7-day action plan.
+
+## 10-second demo
+
+Describe a company:
+
+```bash
+astraut-risk assess "We are a 12-person SaaS startup using AWS, Gmail and Stripe"
+```
+
+Result:
+
+```text
+Risk Score: 67 / 100
+
+Top Risks
+- Missing MFA
+- Public API exposure
+- Insufficient logging
+```
+
+Output includes:
+
+- Risk score
+- Top threats
+- Framework mapping (NIST, CIS, OWASP)
+- 7-day action plan
+
+## What it does
+
+Astraut Risk Reasoner analyzes a simple company description and produces a structured cybersecurity risk assessment.
+
+It combines:
+
+- deterministic risk signals
+- security framework mappings
+- AI explanations
 
 ![MIT License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
