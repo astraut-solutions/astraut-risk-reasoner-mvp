@@ -16,7 +16,7 @@ if str(SRC_PATH) not in sys.path:
 
 from astraut_risk.checklist import CHECKLIST_ITEMS
 from astraut_risk.assessment_formatter import compose_assessment_markdown
-from astraut_risk.assessment_store import load_cached_result, save_cached_result
+from astraut_risk.assessment_store import save_cached_result
 from astraut_risk.config import (
     DEFAULT_MODEL,
     MissingApiKeyError,
@@ -194,46 +194,36 @@ def _run_assessment(
     *,
     use_cache: bool,
     refresh_cache: bool,
-) -> tuple[str, int, str]:
+) -> tuple[str, int, str, bool]:
     validate_company_description(company_description)
     deterministic = assess_company_risk(company_description)
-
-    cached = None
-    if use_cache and not refresh_cache:
-        cached = load_cached_result(
+    from_cache = False
+    api_key = get_groq_api_key(required=True)
+    client = Groq(api_key=api_key)
+    llm_explanation = request_completion(
+        client=client,
+        messages=build_assessment_messages(
+            company_description, assessment=deterministic
+        ),
+        model=DEFAULT_MODEL,
+    )
+    if use_cache or refresh_cache:
+        save_cached_result(
             company_description=company_description,
             model=DEFAULT_MODEL,
             assessment=deterministic,
-        )
-    if cached and cached.get("llm_explanation"):
-        llm_explanation = str(cached["llm_explanation"])
-    else:
-        api_key = get_groq_api_key(required=True)
-        client = Groq(api_key=api_key)
-        llm_explanation = request_completion(
-            client=client,
-            messages=build_assessment_messages(
-                company_description, assessment=deterministic
+            llm_explanation=llm_explanation,
+            assessment_markdown=_compose_web_assessment_markdown(
+                deterministic,
+                llm_explanation,
             ),
-            model=DEFAULT_MODEL,
         )
-        if use_cache:
-            save_cached_result(
-                company_description=company_description,
-                model=DEFAULT_MODEL,
-                assessment=deterministic,
-                llm_explanation=llm_explanation,
-                assessment_markdown=_compose_web_assessment_markdown(
-                    deterministic,
-                    llm_explanation,
-                ),
-            )
 
     content = _compose_web_assessment_markdown(
         deterministic,
         llm_explanation,
     )
-    return content, deterministic.overall_score, deterministic.risk_level
+    return content, deterministic.overall_score, deterministic.risk_level, from_cache
 
 
 st.set_page_config(page_title="Astraut Risk Reasoner", layout="wide")
@@ -251,13 +241,13 @@ st.sidebar.markdown(
 )
 show_raw_output = st.sidebar.checkbox("Show raw model output (debug)", value=False)
 use_cached_assessments = st.sidebar.checkbox(
-    "Use cached assessment results",
-    value=True,
+    "Save assessment snapshots",
+    value=False,
 )
 refresh_cached_assessment = st.sidebar.checkbox(
-    "Force fresh LLM run",
+    "Compatibility mode: --refresh-cache",
     value=False,
-    help="Ignores cached result for this run and refreshes saved content.",
+    help="Kept for parity with CLI flags. Runs fresh assessment and saves snapshot.",
 )
 
 risk_tab, checklist_tab, matrix_tab = st.tabs(
@@ -282,11 +272,12 @@ with risk_tab:
     if st.button("Assess Risk", type="primary"):
         try:
             with st.spinner("Analyzing environment..."):
-                content, overall_score, risk_level = _run_assessment(
+                content, overall_score, risk_level, from_cache = _run_assessment(
                     description,
                     use_cache=use_cached_assessments,
                     refresh_cache=refresh_cached_assessment,
                 )
+            st.caption("Result source: fresh LLM run.")
 
             sections = _extract_sections(content)
 

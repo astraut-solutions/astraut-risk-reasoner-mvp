@@ -20,7 +20,7 @@ from .assessment_formatter import (
     compose_assessment_markdown,
     extract_markdown_sections as shared_extract_markdown_sections,
 )
-from .assessment_store import load_cached_result, save_cached_result
+from .assessment_store import save_cached_result
 from .checklist import format_checklist_markdown
 from .config import (
     DEFAULT_MODEL,
@@ -258,41 +258,25 @@ def _run_assessment_flow(
     render_input_panel(company_description)
 
     llm_explanation: str
-    cache_path_text = ""
-    cached = None
-    if use_cache and not refresh_cache:
-        cached = load_cached_result(
-            company_description=company_description,
+    client = _get_client()
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold yellow]Reasoning about your risk posture...[/bold yellow]"),
+        transient=True,
+        console=console,
+    ) as progress:
+        progress.add_task("llm", total=None)
+        llm_explanation = request_completion(
+            client=client,
+            messages=build_assessment_messages(
+                company_description, assessment=deterministic_assessment
+            ),
             model=model,
-            assessment=deterministic_assessment,
         )
-        if cached and cached.get("llm_explanation"):
-            llm_explanation = str(cached["llm_explanation"])
-            cache_path_text = f"assessments/{cached['cache_key']}.json"
-            render_info("Cache Hit", f"Loaded saved assessment from `{cache_path_text}`.")
-        else:
-            cached = None
-
-    if not cached:
-        client = _get_client()
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[bold yellow]Reasoning about your risk posture...[/bold yellow]"),
-            transient=True,
-            console=console,
-        ) as progress:
-            progress.add_task("llm", total=None)
-            llm_explanation = request_completion(
-                client=client,
-                messages=build_assessment_messages(
-                    company_description, assessment=deterministic_assessment
-                ),
-                model=model,
-            )
 
     content = _format_structured_assessment(deterministic_assessment, llm_explanation)
 
-    if use_cache:
+    if use_cache or refresh_cache:
         saved_path = save_cached_result(
             company_description=company_description,
             model=model,
@@ -300,7 +284,7 @@ def _run_assessment_flow(
             llm_explanation=llm_explanation,
             assessment_markdown=content,
         )
-        render_info("Cache Saved", f"Saved assessment cache at `{saved_path}`.")
+        render_info("Cache Saved", f"Saved assessment snapshot at `{saved_path}`.")
 
     render_assessment(content)
 
@@ -362,12 +346,12 @@ def assess(
     use_cache: bool = typer.Option(
         False,
         "--use-cache",
-        help="Reuse and persist assessment results in local cache for identical deterministic findings.",
+        help="Persist assessment results in local cache (write-only; does not reuse on next run).",
     ),
     refresh_cache: bool = typer.Option(
         False,
         "--refresh-cache",
-        help="Force a fresh LLM call and overwrite cache entry (implies --use-cache behavior).",
+        help="Keep compatibility with older scripts; assessment still runs fresh and saves cache.",
     ),
 ) -> None:
     """Assess risk from a company description."""
@@ -377,7 +361,7 @@ def assess(
             model,
             export,
             output,
-            use_cache=use_cache or refresh_cache,
+            use_cache=use_cache,
             refresh_cache=refresh_cache,
         )
 
@@ -688,12 +672,12 @@ def scenario_run(
     use_cache: bool = typer.Option(
         False,
         "--use-cache",
-        help="Reuse and persist assessment results in local cache for identical deterministic findings.",
+        help="Persist assessment results in local cache (write-only; does not reuse on next run).",
     ),
     refresh_cache: bool = typer.Option(
         False,
         "--refresh-cache",
-        help="Force a fresh LLM call and overwrite cache entry (implies --use-cache behavior).",
+        help="Keep compatibility with older scripts; assessment still runs fresh and saves cache.",
     ),
 ) -> None:
     """Run an assessment against a built-in scenario."""
@@ -714,7 +698,7 @@ def scenario_run(
             model,
             export,
             output,
-            use_cache=use_cache or refresh_cache,
+            use_cache=use_cache,
             refresh_cache=refresh_cache,
         )
     except MissingApiKeyError as exc:

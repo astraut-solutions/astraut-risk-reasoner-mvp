@@ -68,8 +68,8 @@ astraut-risk demo
 
 - `astraut-risk assess "..."`: Deterministic baseline scoring + LLM explanations.
 - `astraut-risk assess "..." --model llama-3.3-70b-versatile`: Select the supported Groq model.
-- `astraut-risk assess "..." --use-cache`: Reuse/persist saved results for identical assessments.
-- `astraut-risk assess "..." --refresh-cache`: Force a fresh LLM call and refresh cache entry.
+- `astraut-risk assess "..." --use-cache`: Save assessment snapshots locally (write-only cache).
+- `astraut-risk assess "..." --refresh-cache`: Compatibility flag; assessment still runs fresh and saves snapshot.
 - `astraut-risk assess "..." --export report.json`: Export full assessment report as JSON.
 - `astraut-risk assess "..." --export report.md`: Export final rendered report as Markdown.
 - `astraut-risk assess "..." --export report.csv`: Export assessment sections as CSV.
