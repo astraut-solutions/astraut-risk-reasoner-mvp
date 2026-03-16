@@ -4,6 +4,8 @@ Turn a short description of a company into a cybersecurity risk assessment.
 
 Describe your stack. Get a risk score, top threats, and a 7-day action plan.
 
+⭐ If you find this useful, consider starring the repository.
+
 ## 10-second demo
 
 Describe a company:
