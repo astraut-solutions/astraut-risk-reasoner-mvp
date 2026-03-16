@@ -210,13 +210,10 @@ src/astraut_risk/
 
 ## Terminal screenshots
 
-Live terminal capture:
+Updated recordings:
 
-![CLI Demo](docs/demo.gif)
-
-Static screenshot:
-
-![CLI Screenshot](docs/example-output.png)
+- [CLI recording](docs/recording.mp4)
+- [Web recording](docs/web-recording.mp4)
 
 ## Development
 
