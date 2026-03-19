@@ -1,3 +1,5 @@
+import json
+
 from typer.testing import CliRunner
 
 from astraut_risk.cli import app
@@ -53,6 +55,11 @@ def test_assess_runs_with_mocked_llm(monkeypatch) -> None:
     result = runner.invoke(app, ["assess", "12-person SaaS company on AWS"])
     assert result.exit_code == 0
     assert "Risk Assessment Result" in result.stdout
+    assert "Risk Dimensions" in result.stdout
+    assert "Likelihood" in result.stdout
+    assert "Impact" in result.stdout
+    assert "Residual Risk" in result.stdout
+    assert "Confidence" in result.stdout
 
 
 def test_assess_invalid_input_fails() -> None:
@@ -79,3 +86,31 @@ def test_assess_export_markdown_path(monkeypatch, tmp_path) -> None:
     )
     assert result.exit_code == 0
     assert output_path.exists()
+
+
+def test_assess_export_json_includes_dimensions_section(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr("astraut_risk.cli._get_client", lambda: object())
+    monkeypatch.setattr(
+        "astraut_risk.cli.request_completion",
+        lambda client, messages, model, temperature=0.2: "## Risk Rationale\nok",
+    )
+    output_path = tmp_path / "report.json"
+    result = runner.invoke(
+        app,
+        [
+            "assess",
+            "12-person SaaS company on AWS with no MFA on admin accounts and public API",
+            "--export",
+            "json",
+            "--output",
+            str(output_path),
+        ],
+    )
+    assert result.exit_code == 0
+    assert output_path.exists()
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    sections = payload.get("sections", {})
+    assert "risk_dimensions" in sections
+    assert "Likelihood" in sections["risk_dimensions"]
+    assert "Residual Risk" in sections["risk_dimensions"]

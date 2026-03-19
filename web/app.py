@@ -24,6 +24,10 @@ from astraut_risk.config import (
     load_environment,
 )
 from astraut_risk.matrix import MATRIX_ROWS
+from astraut_risk.questionnaire import (
+    infer_questionnaire_from_text,
+    merge_questionnaire,
+)
 from astraut_risk.risk_engine import assess_company_risk
 from astraut_risk.reasoning import (
     InvalidInputError,
@@ -36,6 +40,11 @@ from astraut_risk.reasoning import (
 from astraut_risk.scenarios import SCENARIOS
 
 load_environment()
+
+_YN_UNKNOWN = ["unknown", "yes", "no"]
+_SIZE_OPTIONS = ["sme", "mid_market", "enterprise"]
+_SENSITIVITY_OPTIONS = ["unknown", "low", "medium", "high"]
+_REGULATORY_OPTIONS = ["unknown", "unregulated", "regulated"]
 
 
 def _strip_rich_box(line: str) -> str:
@@ -194,9 +203,13 @@ def _run_assessment(
     *,
     use_cache: bool,
     refresh_cache: bool,
+    questionnaire_context: dict[str, dict[str, str]],
 ) -> tuple[str, int, str, bool]:
     validate_company_description(company_description)
-    deterministic = assess_company_risk(company_description)
+    deterministic = assess_company_risk(
+        company_description,
+        questionnaire_context=questionnaire_context,
+    )
     from_cache = False
     api_key = get_groq_api_key(required=True)
     client = Groq(api_key=api_key)
@@ -269,6 +282,126 @@ with risk_tab:
         height=120,
     )
 
+    inferred_questionnaire = infer_questionnaire_from_text(description)
+    st.subheader("Structured Questionnaire (MVP)")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        company_size = st.selectbox(
+            "Company size",
+            _SIZE_OPTIONS,
+            index=_SIZE_OPTIONS.index(
+                inferred_questionnaire["business"].get("company_size", "sme")
+            )
+            if inferred_questionnaire["business"].get("company_size", "sme")
+            in _SIZE_OPTIONS
+            else 0,
+        )
+        data_sensitivity = st.selectbox(
+            "Data sensitivity",
+            _SENSITIVITY_OPTIONS,
+            index=_SENSITIVITY_OPTIONS.index(
+                inferred_questionnaire["business"].get("data_sensitivity", "unknown")
+            )
+            if inferred_questionnaire["business"].get("data_sensitivity", "unknown")
+            in _SENSITIVITY_OPTIONS
+            else 0,
+        )
+        public_api = st.selectbox(
+            "Public API exposed",
+            _YN_UNKNOWN,
+            index=_YN_UNKNOWN.index(
+                inferred_questionnaire["technical_architecture"].get("public_api", "unknown")
+            )
+            if inferred_questionnaire["technical_architecture"].get("public_api", "unknown")
+            in _YN_UNKNOWN
+            else 0,
+        )
+        mfa_enforced = st.selectbox(
+            "MFA enforced (admin/privileged)",
+            _YN_UNKNOWN,
+            index=_YN_UNKNOWN.index(
+                inferred_questionnaire["technical_architecture"].get("mfa_enforced", "unknown")
+            )
+            if inferred_questionnaire["technical_architecture"].get("mfa_enforced", "unknown")
+            in _YN_UNKNOWN
+            else 0,
+        )
+
+    with col2:
+        network_segmentation = st.selectbox(
+            "Network segmentation",
+            _YN_UNKNOWN,
+            index=_YN_UNKNOWN.index(
+                inferred_questionnaire["technical_architecture"].get("network_segmentation", "unknown")
+            )
+            if inferred_questionnaire["technical_architecture"].get("network_segmentation", "unknown")
+            in _YN_UNKNOWN
+            else 0,
+        )
+        logging_monitoring = st.selectbox(
+            "Centralized logging and alerting",
+            _YN_UNKNOWN,
+            index=_YN_UNKNOWN.index(
+                inferred_questionnaire["technical_architecture"].get("logging_monitoring", "unknown")
+            )
+            if inferred_questionnaire["technical_architecture"].get("logging_monitoring", "unknown")
+            in _YN_UNKNOWN
+            else 0,
+        )
+        backup_restore_tested = st.selectbox(
+            "Backup restore tests",
+            _YN_UNKNOWN,
+            index=_YN_UNKNOWN.index(
+                inferred_questionnaire["technical_architecture"].get("backup_restore_tested", "unknown")
+            )
+            if inferred_questionnaire["technical_architecture"].get("backup_restore_tested", "unknown")
+            in _YN_UNKNOWN
+            else 0,
+        )
+        incident_response_plan = st.selectbox(
+            "Incident response plan",
+            _YN_UNKNOWN,
+            index=_YN_UNKNOWN.index(
+                inferred_questionnaire["maturity"].get("incident_response_plan", "unknown")
+            )
+            if inferred_questionnaire["maturity"].get("incident_response_plan", "unknown")
+            in _YN_UNKNOWN
+            else 0,
+        )
+
+    regulatory_profile = st.selectbox(
+        "Regulatory profile",
+        _REGULATORY_OPTIONS,
+        index=_REGULATORY_OPTIONS.index(
+            inferred_questionnaire["compliance"].get("regulatory_profile", "unknown")
+        )
+        if inferred_questionnaire["compliance"].get("regulatory_profile", "unknown")
+        in _REGULATORY_OPTIONS
+        else 0,
+    )
+
+    user_questionnaire = {
+        "business": {
+            "company_size": company_size,
+            "data_sensitivity": data_sensitivity,
+        },
+        "technical_architecture": {
+            "public_api": public_api,
+            "mfa_enforced": mfa_enforced,
+            "network_segmentation": network_segmentation,
+            "logging_monitoring": logging_monitoring,
+            "backup_restore_tested": backup_restore_tested,
+        },
+        "compliance": {
+            "regulatory_profile": regulatory_profile,
+        },
+        "maturity": {
+            "incident_response_plan": incident_response_plan,
+        },
+    }
+    questionnaire_context = merge_questionnaire(inferred_questionnaire, user_questionnaire)
+
     if st.button("Assess Risk", type="primary"):
         try:
             with st.spinner("Analyzing environment..."):
@@ -276,6 +409,7 @@ with risk_tab:
                     description,
                     use_cache=use_cached_assessments,
                     refresh_cache=refresh_cached_assessment,
+                    questionnaire_context=questionnaire_context,
                 )
             st.caption("Result source: fresh LLM run.")
 

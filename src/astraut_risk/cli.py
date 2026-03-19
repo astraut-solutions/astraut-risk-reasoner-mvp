@@ -41,6 +41,12 @@ from .output import (
     render_input_panel,
     render_matrix,
 )
+from .questionnaire import (
+    high_impact_missing_fields,
+    infer_questionnaire_from_text,
+    load_questionnaire_file,
+    merge_questionnaire,
+)
 from .risk_engine import assess_company_risk
 from .framework_mapping import (
     list_framework_names,
@@ -242,6 +248,54 @@ def _format_structured_assessment(
     return compose_assessment_markdown(assessment, llm_explanation)
 
 
+_QUESTION_PROMPTS: dict[tuple[str, str], str] = {
+    ("technical_architecture", "public_api"): "Do you expose a public API? (yes/no/unknown)",
+    ("technical_architecture", "mfa_enforced"): "Is MFA enforced for privileged/admin access? (yes/no/unknown)",
+    ("technical_architecture", "network_segmentation"): "Is network segmentation implemented? (yes/no/unknown)",
+    ("technical_architecture", "logging_monitoring"): "Are centralized logging and alerting in place? (yes/no/unknown)",
+    ("technical_architecture", "backup_restore_tested"): "Are backup restore tests performed regularly? (yes/no/unknown)",
+    ("maturity", "incident_response_plan"): "Do you have a documented incident response plan? (yes/no/unknown)",
+}
+
+
+def _normalize_yes_no_unknown(value: str) -> str:
+    normalized = (value or "").strip().lower()
+    if normalized in {"yes", "y"}:
+        return "yes"
+    if normalized in {"no", "n"}:
+        return "no"
+    return "unknown"
+
+
+def _collect_questionnaire_context(
+    company_description: str,
+    questionnaire_file: str,
+    prompt_missing: bool,
+) -> dict[str, dict[str, str]]:
+    inferred = infer_questionnaire_from_text(company_description)
+    from_file: dict[str, dict[str, str]] | None = None
+    if questionnaire_file.strip():
+        from_file = load_questionnaire_file(questionnaire_file.strip())
+    questionnaire = merge_questionnaire(inferred, from_file)
+    missing = high_impact_missing_fields(questionnaire)
+    if not missing:
+        return questionnaire
+
+    can_prompt = prompt_missing and sys.stdin.isatty()
+    if not can_prompt:
+        return questionnaire
+
+    render_info(
+        "Questionnaire",
+        "Answering a few high-impact context questions improves assessment quality.",
+    )
+    for domain, field in missing:
+        prompt = _QUESTION_PROMPTS.get((domain, field), f"{domain}.{field} (yes/no/unknown)")
+        answer = typer.prompt(prompt, default="unknown")
+        questionnaire[domain][field] = _normalize_yes_no_unknown(answer)
+    return questionnaire
+
+
 def _run_assessment_flow(
     company_description: str,
     model: str,
@@ -249,11 +303,21 @@ def _run_assessment_flow(
     output: str,
     use_cache: bool = False,
     refresh_cache: bool = False,
+    questionnaire_file: str = "",
+    prompt_missing: bool = True,
 ) -> None:
     validate_company_description(company_description)
     validate_model(model)
     export_formats, resolved_output = _parse_export_request(export, output)
-    deterministic_assessment = assess_company_risk(company_description)
+    questionnaire_context = _collect_questionnaire_context(
+        company_description,
+        questionnaire_file=questionnaire_file,
+        prompt_missing=prompt_missing,
+    )
+    deterministic_assessment = assess_company_risk(
+        company_description,
+        questionnaire_context=questionnaire_context,
+    )
 
     render_input_panel(company_description)
 
@@ -353,6 +417,16 @@ def assess(
         "--refresh-cache",
         help="Keep compatibility with older scripts; assessment still runs fresh and saves cache.",
     ),
+    questionnaire_file: str = typer.Option(
+        "",
+        "--questionnaire-file",
+        help="Optional path to questionnaire JSON for structured context.",
+    ),
+    prompt_missing_questionnaire: bool = typer.Option(
+        True,
+        "--prompt-missing-questionnaire/--no-prompt-missing-questionnaire",
+        help="Prompt for missing high-impact questionnaire fields when running interactively.",
+    ),
 ) -> None:
     """Assess risk from a company description."""
     try:
@@ -363,6 +437,8 @@ def assess(
             output,
             use_cache=use_cache,
             refresh_cache=refresh_cache,
+            questionnaire_file=questionnaire_file,
+            prompt_missing=prompt_missing_questionnaire,
         )
 
     except MissingApiKeyError as exc:
@@ -679,6 +755,16 @@ def scenario_run(
         "--refresh-cache",
         help="Keep compatibility with older scripts; assessment still runs fresh and saves cache.",
     ),
+    questionnaire_file: str = typer.Option(
+        "",
+        "--questionnaire-file",
+        help="Optional path to questionnaire JSON for structured context.",
+    ),
+    prompt_missing_questionnaire: bool = typer.Option(
+        True,
+        "--prompt-missing-questionnaire/--no-prompt-missing-questionnaire",
+        help="Prompt for missing high-impact questionnaire fields when running interactively.",
+    ),
 ) -> None:
     """Run an assessment against a built-in scenario."""
     description = get_scenario_description(scenario_id)
@@ -700,6 +786,8 @@ def scenario_run(
             output,
             use_cache=use_cache,
             refresh_cache=refresh_cache,
+            questionnaire_file=questionnaire_file,
+            prompt_missing=prompt_missing_questionnaire,
         )
     except MissingApiKeyError as exc:
         render_error(

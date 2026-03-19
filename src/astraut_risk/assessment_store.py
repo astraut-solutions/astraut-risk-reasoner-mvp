@@ -10,7 +10,7 @@ from typing import Any
 
 from .models import RiskAssessment
 
-ENGINE_VERSION = "1"
+ENGINE_VERSION = "2"
 DEFAULT_CACHE_DIR = "assessments"
 
 
@@ -29,9 +29,14 @@ def cache_key_for_assessment(
         "model": model,
         "company_input": _normalize_text(company_description),
         "overall_score": assessment.overall_score,
+        "residual_risk": assessment.residual_risk,
+        "inherent_risk": assessment.inherent_risk,
+        "confidence": assessment.confidence,
         "risk_level": assessment.risk_level,
         "top_risks": assessment.top_risks,
         "control_gaps": assessment.control_gaps,
+        "questionnaire": assessment.questionnaire,
+        "factor_snapshot": assessment.factor_snapshot,
         "signal_ids": [signal.signal_id for signal in assessment.matched_signals],
     }
     raw = json.dumps(payload, sort_keys=True, ensure_ascii=False)

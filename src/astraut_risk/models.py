@@ -63,6 +63,12 @@ class RiskAssessment:
     company_input: str
     overall_score: int
     risk_level: str
+    likelihood: float = 0.0
+    impact: float = 0.0
+    inherent_risk: int = 0
+    residual_risk: int = 0
+    control_reduction: float = 0.0
+    confidence: float = 0.0
     matched_signals: list[RiskSignal] = field(default_factory=list)
     top_risks: list[str] = field(default_factory=list)
     control_gaps: list[str] = field(default_factory=list)
@@ -70,6 +76,9 @@ class RiskAssessment:
     seven_day_plan: list[str] = field(default_factory=list)
     investment_priorities: list[InvestmentPriority] = field(default_factory=list)
     framework_references: dict[str, list[FrameworkReference]] = field(default_factory=dict)
+    questionnaire: dict[str, dict[str, str]] = field(default_factory=dict)
+    factor_snapshot: dict[str, object] = field(default_factory=dict)
+    questionnaire_context: dict[str, dict[str, str]] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, object]:
         """Serialize to a plain dict for prompt wiring and exports."""

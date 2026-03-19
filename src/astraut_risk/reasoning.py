@@ -83,7 +83,16 @@ def build_assessment_messages(
     summary = {
         "company_input": assessment.company_input,
         "overall_score": assessment.overall_score,
+        "likelihood": assessment.likelihood,
+        "impact": assessment.impact,
+        "inherent_risk": assessment.inherent_risk,
+        "residual_risk": assessment.residual_risk,
+        "control_reduction": assessment.control_reduction,
+        "confidence": assessment.confidence,
         "risk_level": assessment.risk_level,
+        "questionnaire_context": assessment.questionnaire_context,
+        "questionnaire": assessment.questionnaire,
+        "factor_snapshot": assessment.factor_snapshot,
         "matched_signals": [
             {
                 "id": signal.signal_id,
