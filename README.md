@@ -147,12 +147,15 @@ Detected risks are mapped to widely used security frameworks including:
 
 ## How scoring works
 
-Base score generation is deterministic and rule-based:
+Base scoring is deterministic and rule-based, with a structured factor model:
 
-1. Parse company description for known SME control-risk signals (e.g., no MFA, flat network, no logging).
-2. Apply fixed signal weights.
-3. Compute total score and risk level.
-4. Map matched signals to explainable control guidance.
+1. Parse company description and optional questionnaire context for known SME control-risk signals.
+2. Compute normalized `likelihood` and `impact` from weighted factors.
+3. Compute `inherent_risk = likelihood * impact * 100` (bounded to 0-100).
+4. Compute control effectiveness and adjusted control reduction with diminishing returns.
+5. Compute `residual_risk` and use it as `overall_score`.
+6. Compute `confidence` from questionnaire completeness, signal coverage, and evidence quality.
+7. Map matched signals to explainable control guidance and framework references.
 
 The LLM receives these structured findings and expands them into clear recommendations, priorities, and 7-day actions. The LLM does not generate the base score.
 
@@ -185,14 +188,21 @@ astraut-risk inspect "12-person SaaS startup on AWS with no MFA"
 ```text
 User input
   ↓
-Deterministic SME risk engine (rule-based)
+Deterministic SME risk engine (signals + questionnaire + factor model)
   ↓
-Structured findings (score, matched signals, control gaps)
+Structured findings (likelihood, impact, inherent, residual, confidence, control gaps)
   ↓
 LLM explanation + prioritization
   ↓
 CLI / Streamlit output
 ```
+
+## Architecture status
+
+- Current implementation: single-process CLI + Streamlit app with local files/cache and no external persistence layer.
+- `PLAN.md` describes the implemented MVP enhancement scope for structured input and document-aligned risk computation.
+- `docs/Astraut Risk Reasoner-v2.md` and `docs/Astraut Risk Reasoner-v3.md` describe broader target-state platform architecture (future-facing reference), not the current deployed repo shape.
+- See `docs/STATUS.md` for a concise alignment snapshot.
 
 ## Project structure
 
@@ -212,10 +222,11 @@ src/astraut_risk/
 
 ## Terminal screenshots
 
-Updated recordings:
+Current docs assets:
 
-- [CLI recording](docs/recording.mp4)
-- [Web recording](docs/web-recording.mp4)
+- [System Architecture Diagram](docs/18.1%20System%20Architecture%20Diagram.png)
+- [Risk Computation Flow Diagram](docs/18.2%20Risk%20Computation%20Flow%20Diagram.png)
+- [Deployment Diagram](docs/18.3%20Deployment%20Diagram.png)
 
 ## Development
 
