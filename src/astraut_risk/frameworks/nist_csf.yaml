@@ -1,0 +1,20 @@
+no_mfa:
+  control: "PR.AC-7"
+  title: "Identity Authentication"
+  description: "Users, devices, and other assets are authenticated."
+public_api:
+  control: "PR.PT-4"
+  title: "Protective Technology"
+  description: "Communications and control networks are protected."
+no_logging:
+  control: "DE.CM-1"
+  title: "Continuous Monitoring"
+  description: "The network is monitored to detect potential cybersecurity events."
+no_alerting:
+  control: "DE.AE-5"
+  title: "Alert Thresholds"
+  description: "Incident alert thresholds are established."
+no_tested_backups:
+  control: "RC.RP-1"
+  title: "Recovery Plan Execution"
+  description: "Recovery plan is executed and validated during or after incidents."

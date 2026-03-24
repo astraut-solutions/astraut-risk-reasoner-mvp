@@ -1,0 +1,41 @@
+likelihood_weights:
+  exposure: 0.28
+  exploitability_proxy: 0.22
+  threat_relevance_proxy: 0.2
+  identity_exposure: 0.18
+  precondition_complexity: 0.12
+
+impact_weights:
+  business_criticality: 0.15
+  data_sensitivity: 0.24
+  privilege_level: 0.16
+  blast_radius: 0.2
+  regulatory_consequence: 0.12
+  customer_impact: 0.13
+
+control_effectiveness_weights:
+  design: 0.3
+  operating_evidence: 0.35
+  coverage: 0.2
+  freshness: 0.1
+  exception_rate: 0.05
+
+control_strengths:
+  mfa: 0.3
+  segmentation: 0.25
+  logging_detection: 0.18
+  backup_recovery: 0.15
+  incident_response: 0.12
+
+confidence_weights:
+  questionnaire_completeness: 0.35
+  signal_coverage: 0.25
+  control_evidence_quality: 0.2
+  input_specificity: 0.2
+
+requirement_risk_weights:
+  control_risk_weight: 1.0
+  data_sensitivity_weight: 1.0
+  exposure_level_weight: 1.0
+  compliance_gap_weight: 1.0
+  normalization_multiplier: 3.5

@@ -1,0 +1,14 @@
+{
+  "business": {
+    "data_sensitivity": "high"
+  },
+  "technical_architecture": {
+    "mfa_enforced": "yes",
+    "public_api": "yes",
+    "logging_monitoring": "yes",
+    "backup_restore_tested": "yes"
+  },
+  "maturity": {
+    "incident_response_plan": "yes"
+  }
+}

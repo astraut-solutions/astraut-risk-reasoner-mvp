@@ -1,0 +1,20 @@
+no_mfa:
+  control: "CIS 6.3"
+  title: "Multi-factor Authentication"
+  description: "Require multi-factor authentication for administrative access."
+public_api:
+  control: "CIS 12.1"
+  title: "Network Infrastructure Management"
+  description: "Ensure network infrastructure is managed and defended."
+no_logging:
+  control: "CIS 8.2"
+  title: "Audit Log Collection"
+  description: "Collect and manage audit logs for critical systems."
+no_alerting:
+  control: "CIS 8.5"
+  title: "Alert Tuning and Operations"
+  description: "Generate and tune alerts for suspicious activity."
+no_tested_backups:
+  control: "CIS 11.4"
+  title: "Recovery Testing"
+  description: "Test data recovery procedures regularly."
