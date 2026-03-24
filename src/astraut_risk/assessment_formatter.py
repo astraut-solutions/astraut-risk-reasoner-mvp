@@ -13,18 +13,14 @@ _METHOD_SECTION = (
     "- Inherent risk: `Likelihood x Impact x 100`.\n"
     "- Unknown questionnaire values are treated pessimistically (worst-case) until confirmed.\n"
     "- Residual risk: `Inherent x (1 - ControlReduction)` with an uncertainty multiplier for missing questionnaire evidence.\n"
-    "- Control coverage (runtime panel): `retrieved controls / mapped applicable controls x 100`.\n"
     "- Recommendations expanded using LLM reasoning.\n"
     "- Built for guidance, not formal audit use.\n"
 )
 
 _REQUIRED_REPORT_SECTIONS = (
-    "Applicable Standards",
     "Identified Risks",
     "Recommendations",
 )
-
-_STANDARD_OUTPUT_ORDER = ("CIS", "NIST", "OWASP")
 
 
 def _severity_from_signal_weight(weight: int) -> str:
@@ -200,7 +196,7 @@ def _normalize_llm_explanation(llm_explanation: str, *, full_detail: bool = Fals
     if seven_day:
         parts.extend(["## 7-day Action Checklist", seven_day, ""])
     if investments:
-        parts.extend(["## Suggested investment priorities (2025 matrix)", investments, ""])
+        parts.extend(["## Suggested Next Actions", investments, ""])
 
     if parts:
         return "\n".join(parts).strip()
@@ -208,12 +204,7 @@ def _normalize_llm_explanation(llm_explanation: str, *, full_detail: bool = Fals
 
 
 def build_required_report_sections(assessment: RiskAssessment) -> dict[str, list[str]]:
-    """Build the three required report sections with deterministic fallback content."""
-    standards_lines = (
-        [f"- {standard}" for standard in assessment.applicable_standards]
-        if assessment.applicable_standards
-        else ["- No standards matched from current requirements context."]
-    )
+    """Build the required report sections with deterministic fallback content."""
 
     identified_risks_lines: list[str] = []
     if assessment.matched_signals:
@@ -287,83 +278,9 @@ def build_required_report_sections(assessment: RiskAssessment) -> dict[str, list
         ]
 
     return {
-        "Applicable Standards": standards_lines,
         "Identified Risks": identified_risks_lines,
         "Recommendations": recommendation_lines,
     }
-
-
-def _standard_specific_output_sections(assessment: RiskAssessment) -> dict[str, list[str]]:
-    sections: dict[str, list[str]] = {}
-    for standard in _STANDARD_OUTPUT_ORDER:
-        signal_refs: list[str] = []
-        seen_signal_ref: set[tuple[str, str]] = set()
-        for refs in assessment.framework_references.values():
-            for ref in refs:
-                if ref.framework != standard:
-                    continue
-                key = (ref.framework, ref.control_id)
-                if key in seen_signal_ref:
-                    continue
-                seen_signal_ref.add(key)
-                label = ref.control_id
-                if ref.title:
-                    label = f"{label} - {ref.title}"
-                detail = f"{label}: {ref.description}" if ref.description else label
-                signal_refs.append(f"- {detail}")
-
-        req_risks = [
-            risk
-            for risk in assessment.identified_requirement_risks
-            if standard in {tag.strip() for tag in risk.compliance_tags}
-        ]
-
-        matched_controls: list[str] = []
-        for control in assessment.mapped_requirements:
-            refs = [ref for ref in control.framework_refs if ref.framework == standard]
-            if not refs:
-                continue
-            controls_text = ", ".join(sorted({ref.control_id for ref in refs if ref.control_id}))
-            matched_controls.append(
-                (
-                    "- "
-                    f"[{control.mapped_layer}] controls: {controls_text or 'mapped'}; "
-                    f"source: {control.document_title} v{control.document_version}; "
-                    f"retrieval: {control.retrieval_score:.2f}"
-                )
-            )
-
-        lines: list[str] = [
-            f"- Signal-linked control references: {len(signal_refs)}",
-            f"- Requirement-linked risks tagged {standard}: {len(req_risks)}",
-            f"- Matched requirement controls mapped to {standard}: {len(matched_controls)}",
-            "",
-            "### Signal-linked controls",
-        ]
-        lines.extend(signal_refs if signal_refs else ["- None mapped from matched runtime signals."])
-
-        lines.extend(["", "### Requirement-linked risks"])
-        if req_risks:
-            for idx, risk in enumerate(req_risks, start=1):
-                lines.extend(
-                    [
-                        (
-                            f"{idx}. {risk.risk} "
-                            f"({risk.severity}, impact: {risk.impact}, score: {risk.score:.2f})"
-                        ),
-                        f"   - Why: {risk.why}",
-                        f"   - Source: {risk.source_document}",
-                    ]
-                )
-        else:
-            lines.append("- None tagged to this standard in current requirement risk set.")
-
-        lines.extend(["", "### Matched requirement controls"])
-        lines.extend(matched_controls if matched_controls else ["- None mapped from requirements retrieval."])
-
-        sections[standard] = lines
-
-    return sections
 
 
 def _build_detailed_risk_register(assessment: RiskAssessment) -> list[str]:
@@ -400,17 +317,6 @@ def _build_detailed_risk_register(assessment: RiskAssessment) -> list[str]:
             else:
                 lines.append("   - Mitigation: no recommendation generated for this signal.")
 
-            refs = assessment.framework_references.get(signal.signal_id, [])
-            if refs:
-                lines.append("   - Framework mappings:")
-                for ref in refs:
-                    label = ref.control_id
-                    if ref.title:
-                        label = f"{label} - {ref.title}"
-                    detail = f"{label}: {ref.description}" if ref.description else label
-                    lines.append(f"     - {ref.framework}: {detail}")
-            else:
-                lines.append("   - Framework mappings: none")
     else:
         lines.append("- No runtime risk signals matched from current input.")
 
@@ -427,7 +333,7 @@ def _build_detailed_risk_register(assessment: RiskAssessment) -> list[str]:
                     f"   - Why this risk exists: {risk.why}",
                     f"   - Source document: {risk.source_document}",
                     f"   - Reference control: {risk.reference_control}",
-                    f"   - Standards tags: {tags}",
+                    f"   - Tags: {tags}",
                 ]
             )
     else:
@@ -449,7 +355,7 @@ def _build_detailed_risk_register(assessment: RiskAssessment) -> list[str]:
                         f"  source: {control.document_title} v{control.document_version}; "
                         f"reason: {control.retrieval_reason or 'baseline retrieval match'}"
                     ),
-                    f"  mapped standards: {refs or 'none'}",
+                    f"  references: {refs or 'none'}",
                 ]
             )
     else:
@@ -464,31 +370,44 @@ def compose_assessment_markdown(
     *,
     full_detail: bool = False,
 ) -> str:
-    """Compose final markdown from deterministic findings and optional LLM narrative."""
+    """Compose a concise, client-ready report for MVP assessments."""
     top_risks = assessment.top_risks or ["No high-confidence risk signals were matched."]
     control_gaps = assessment.control_gaps or ["No explicit control gaps detected from input text."]
-    investment_lines = (
-        [
-            f"{idx}. {item.bucket} (signal weight: +{item.score_contribution})"
-            for idx, item in enumerate(assessment.investment_priorities[:3], start=1)
-        ]
-        if assessment.investment_priorities
-        else ["1. Continue validating baseline controls with real configuration data."]
-    )
     recommendations = (
         [f"- {rec.recommendation}" for rec in assessment.recommendations[:5]]
         if assessment.recommendations
         else ["- Capture more environment details to generate focused recommendations."]
     )
     seven_day = (
-        [f"{idx}. {step}" for idx, step in enumerate(assessment.seven_day_plan[:7], start=1)]
+        [f"{idx}. {step}" for idx, step in enumerate(assessment.seven_day_plan[:5], start=1)]
         if assessment.seven_day_plan
         else ["1. Run a quick controls inventory across identity, backup, and monitoring."]
+    )
+    priority_lines = (
+        [
+            f"- {item.bucket}: signal contribution +{item.score_contribution}"
+            for item in assessment.investment_priorities[:3]
+        ]
+        if assessment.investment_priorities
+        else ["- Validate baseline controls with real configuration evidence."]
+    )
+    identified_risks_lines = (
+        [
+            f"{idx}. {signal.label} ({_severity_from_signal_weight(signal.weight)} severity)"
+            for idx, signal in enumerate(assessment.matched_signals[:4], start=1)
+        ]
+        if assessment.matched_signals
+        else ["1. No explicit high-confidence vulnerabilities detected from the current description."]
     )
 
     parts = [
         "## Overall Risk Score",
         f"{assessment.overall_score}/100 ({assessment.risk_level})",
+        "",
+        "## Executive Summary",
+        f"- Residual risk is **{assessment.residual_risk}/100** with **{int(round(assessment.confidence * 100))}%** confidence.",
+        f"- Current profile indicates **{len(assessment.matched_signals)} key risk signals** and **{len(control_gaps)} control gaps**.",
+        "- Priority should be reducing identity, exposure, and recovery weaknesses in the next 7 days.",
         "",
         "## Risk Dimensions",
         f"- Likelihood: {assessment.likelihood:.2f} ({int(round(assessment.likelihood * 100))}/100)",
@@ -502,101 +421,37 @@ def compose_assessment_markdown(
         "## Top 3 Risks",
         *[f"{idx}. {risk}" for idx, risk in enumerate(top_risks[:3], start=1)],
         "",
-        "## Detected Control Gaps",
-        *[f"- {gap}" for gap in control_gaps],
+        "## Identified Risks",
+        *identified_risks_lines,
+        "",
+        "## Key Control Gaps",
+        *[f"- {gap}" for gap in control_gaps[:5]],
     ]
-    if assessment.detected_security_domains:
-        parts.extend(
-            [
-                "",
-                "## Detected Security Domains",
-                *[f"- {domain}" for domain in assessment.detected_security_domains],
-            ]
-        )
     parts.extend(
         [
             "",
-            "## Control Coverage",
-            f"- Control Coverage %: {assessment.control_coverage_percent:.2f}",
-            f"- Mapped applicable controls: {assessment.mapped_controls_count}",
-            f"- Retrieved controls (ranked): {assessment.retrieved_controls_count}",
-            f"- Total controls in index: {assessment.requirements_controls_total}",
+            "## Recommended Actions",
+            *recommendations,
+            "",
+            "## 7-day Action Plan",
+            *seven_day,
+            "",
+            "## Priority Focus Areas",
+            *priority_lines,
         ]
     )
-    if not assessment.requirements_calibration_enabled:
-        parts.append("- Requirements calibration is disabled; coverage remains informational only.")
-
-    residual_adjustments = assessment.factor_snapshot.get("residual_adjustments", {})
-    if isinstance(residual_adjustments, dict):
-        parts.extend(
-            [
-                "",
-                "## Runtime Variables",
-                (
-                    f"- Questionnaire completeness: "
-                    f"{float(residual_adjustments.get('questionnaire_completeness', 0.0)) * 100:.2f}%"
-                ),
-                (
-                    f"- Residual before uncertainty: "
-                    f"{float(residual_adjustments.get('residual_before_uncertainty', assessment.residual_risk)):.2f}/100"
-                ),
-                (
-                    f"- Uncertainty multiplier: "
-                    f"x{float(residual_adjustments.get('uncertainty_multiplier', 1.0)):.2f}"
-                ),
-            ]
-        )
-    required_sections = build_required_report_sections(assessment)
-    for section in _REQUIRED_REPORT_SECTIONS:
-        parts.extend(["", f"## {section}"])
-        parts.extend(required_sections.get(section, []))
-
-    parts.extend(["", "## Standard-Specific Outputs"])
-    standard_sections = _standard_specific_output_sections(assessment)
-    for standard in _STANDARD_OUTPUT_ORDER:
-        parts.extend(["", f"## {standard} Output"])
-        parts.extend(standard_sections.get(standard, [f"- No data available for {standard}."]))
-
-    parts.extend(["", "## Detailed Risk Register (Full)"])
-    parts.extend(_build_detailed_risk_register(assessment))
-
-    if assessment.framework_references:
-        grouped: dict[str, list[str]] = {}
-        seen: set[tuple[str, str]] = set()
-        for refs in assessment.framework_references.values():
-            for ref in refs:
-                key = (ref.framework, ref.control_id)
-                if key in seen:
-                    continue
-                seen.add(key)
-                label = f"{ref.control_id}"
-                if ref.title:
-                    label = f"{label} - {ref.title}"
-                line = f"- {label}: {ref.description}" if ref.description else f"- {label}"
-                grouped.setdefault(ref.framework, []).append(line)
-
-        if grouped:
-            parts.extend(["", "## Framework Mapping"])
-            for framework in sorted(grouped.keys()):
-                parts.append(f"### {framework}")
-                parts.extend(grouped[framework])
 
     if llm_explanation:
-        parts.extend(["", _normalize_llm_explanation(llm_explanation, full_detail=full_detail)])
-    else:
-        parts.extend(
-            [
-                "",
-                "## Personalized Recommendations (Zero Trust first)",
-                *recommendations,
-                "",
-                "## 7-day Action Checklist",
-                *seven_day,
-                "",
-                "## Suggested investment priorities (2025 matrix)",
-                *investment_lines,
-            ]
-        )
+        parts.extend(["", "## Advisor Notes", _normalize_llm_explanation(llm_explanation, full_detail=False)])
+
+    parts.extend(
+        [
+            "",
+            "## Upgrade Potential",
+            "- Paid edition can add governance workflow, policy gates, deeper control evidence, and integration hooks.",
+            "- This MVP report is intentionally concise for fast executive decision-making.",
+        ]
+    )
 
     parts.extend(["", _METHOD_SECTION.strip()])
     return "\n".join(parts).strip() + "\n"

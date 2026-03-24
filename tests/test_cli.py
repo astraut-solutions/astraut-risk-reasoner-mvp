@@ -13,32 +13,6 @@ def test_demo_runs_successfully() -> None:
     assert "Demo mode" in result.stdout
 
 
-def test_checklist_runs_successfully() -> None:
-    result = runner.invoke(app, ["checklist"])
-    assert result.exit_code == 0
-    assert "SME Security Checklist" in result.stdout
-
-
-def test_matrix_runs_successfully() -> None:
-    result = runner.invoke(app, ["matrix"])
-    assert result.exit_code == 0
-    assert "Cybersecurity Investment Strategy Matrix 2025" in result.stdout
-
-
-def test_controls_runs_successfully() -> None:
-    result = runner.invoke(app, ["controls"])
-    assert result.exit_code == 0
-    assert "Framework mappings enabled" in result.stdout
-    assert "CIS Critical Security Controls" in result.stdout
-
-
-def test_controls_filtered_by_framework() -> None:
-    result = runner.invoke(app, ["controls", "cis"])
-    assert result.exit_code == 0
-    assert "CIS control mappings" in result.stdout
-    assert "no_mfa: 6.3" in result.stdout
-
-
 def test_explain_runs_successfully() -> None:
     result = runner.invoke(app, ["explain", "mfa"])
     assert result.exit_code == 0
