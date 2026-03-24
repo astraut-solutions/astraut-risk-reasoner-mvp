@@ -1,0 +1,998 @@
+# Sicherheitsanforderungen 12_2025_de - PDF Zusammenfassung
+
+- Gesamtzahl PDFs: **65**
+- Basis: automatisierte Textextraktion aus den PDF-Inhalten (ohne OCR).
+
+## Kategorien
+- 01_Allgemeine_Anforderungen: 7
+- 02_Architektur: 3
+- 03_Betriebssysteme: 5
+- 04_Virtualisierung: 5
+- 05_Datenbanken: 6
+- 06_Server_Applikationen: 2
+- 07_Applikationsserver: 2
+- 08_Webserver: 5
+- 09_Endgeraete: 5
+- 10_Netzwerkkomponenten: 7
+- 11_Fremdfirmenzugang: 2
+- 12_Mobile_Applikationen: 2
+- 13_Betriebliche_Sicherheitsanforderungen: 2
+- 14_Web_Services: 3
+- 15_Cloud: 9
+
+## Querschnittliche Anforderungsschwerpunkte
+- patching: in 16 Dokumenten
+- cloud: in 14 Dokumenten
+- auth: in 6 Dokumenten
+- network: in 6 Dokumenten
+- crypto: in 5 Dokumenten
+- logging: in 5 Dokumenten
+- hardening: in 4 Dokumenten
+- access: in 1 Dokumenten
+
+## Pro PDF: Kurzfassung und Anforderungspunkte
+### Technischer Basisschutz von IT-/NT-Systemen
+- Datei: `01_Allgemeine_Anforderungen/3_01_Technischer_Basisschutz_von_IT-_NT-Systemen_v9.0.pdf`
+- Kurzfassung: Richtlinie mit grundsätzlichen Anforderungen für die Absicherung von IT- und NT-Systemen. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - Software und Hardware des Systems müssen von einem Sicherheitsschwachstellen-Support
+  - Eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und auf Integrität geprüft
+
+### Kryptographische Algorithmen und Sicherheitsprotokolle
+- Datei: `01_Allgemeine_Anforderungen/3_50_Kryptographische_Algorithmen_und_Sicherheitsp_v8.0.pdf`
+- Kurzfassung: Kryptographische Algorithmen und Sicherheitsprotokolle Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - Policy) in Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Pla-
+  - Vertraulichkeit und Integrität. Sollen kryptografische Methoden eingesetzt werden, um Anonymisierungs- bzw. Pseud-
+  - Jede Abweichung muss mit der Sicherheitsorganisation der Deutschen Telekom Gruppe abgestimmt und vereinbart
+  - Eigene Implementierungen von kryptographischen Algorithmen sollen vermieden werden. Stattdessen müssen eta-
+  - Algorithmen implementiert haben. Wenn eigene Implementierungen erforderlich sind, müssen Best Practices beach-
+  - Für die Implementierung von kryptografischen Verfahren müssen etablierte und aktuelle Krypto-
+  - klar abgegrenzten Modulen zu implementieren. Die Auswahl und Konfiguration der Verfahren darf nicht fest im Code
+  - hinterlegt sein, sondern muss über konfigurierbare, autorisierte Schnittstellen möglich sein.
+
+### Verwendung von Public Clouds
+- Datei: `01_Allgemeine_Anforderungen/3_66_Verwendung_von_Public_Clouds_v5.0.pdf`
+- Kurzfassung: Dieses Dokument behandelt die sichere Nutzung von Public Cloud-Diensten. Die Anforderungen in diesem Doku- ment sind meist grob umrissen, sodass sie die meisten Cloudanbietern und Anwendungsfälle abdecken können. Die- ses Dokument enthält keine technischen Implementierungsdetails für bestimmte Cloudanbieter. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - hängt vom verwendeten Servicemodell ab, z. B. muss der Cloud-Anbieter bei der Verwendung von IaaS den Hypervi-
+  - (Mandant) die virtuellen Maschinen und die darin laufende Software ordnungsgemäß sichern muss.
+  - Kunden noch entsprechend konfiguriert werden müssen) und solche, die der Kunde zusätzlich zu anderen Diensten
+  - klassifizieren. Dabei muss nicht nur die Datenverfügbarkeit, sondern auch der Lebenszyklus der Daten berücksichtigt
+  - Alle Nutzer, einschließlich der Betreiber einer Landing Zone und insbesondere des Applikationsbetriebs, müssen sich
+  - Bevor eine Applikation in der Cloud betrieben werden darf, muss die relevante Dokumentation der
+  - träge mit dem CSP unterzeichnet werden. Wenn ein BSI-C5-Auditbericht vorhanden ist, muss dieser ebenfalls ausge-
+
+### CICD Ketten
+- Datei: `01_Allgemeine_Anforderungen/3_68_CICD_Ketten_v1.3.pdf`
+- Kurzfassung: This document covers security of CICD chains and secure usage of CICD chains for development, testing and produc- tion of systems which use CICD chains. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - de-/Befehlsinjektion, Konfigurationsfehler, usw. Die CICD-Kette in Kombination mit DevOps-Praktiken muss nicht nur
+  - Ketten verwenden. Die CICD-Kette muss die Funktionalität und vernünftige Standardwerte bereitstellen, aber die Sy-
+  - ausgeschlossen werden muss, z. B. Denial-of-Service).
+  - den. Dies muss vollständig separat erfolgen. Zusätzlich zu den typischen betrieblichen Problemen könnte dies
+  - Damit die CICD-Kette mehrere Software und Systeme (und natürlich auch Benutzer) hosten kann, muss sie die Man-
+  - Die CICD-Kette muss eine vollständige Trennung zwischen einem gehosteten System und allen anderen gehosteten
+  - Die CICD-Kette muss völlig getrennt von Software und Systemen behandelt werden, die die CICD-
+  - Die CICD-Kette muss mandantenfähig sein.
+
+### IAM
+- Datei: `01_Allgemeine_Anforderungen/3_69_IAM_(Identity_Access_Management)_-_Framework_v6.0.pdf`
+- Kurzfassung: Ein Identity- and Access Management (IAM) - Framework sorgt für eine zentrale Verwaltung von Identitäten und Zu- griffsrechten für unterschiedliche Systeme und Applikationen. Authentifizierung und Autorisierung der User sind zen- trale Funktionen des IAM-Frameworks. Das IAM-Framework befasst sich weiterhin mit der Verwaltung von Benutzer- daten, die einzelnen Personen zugeordnet sind. Dabei ist die Identität eine Sammlung von personenbezogenen
+- Wichtige Anforderungspunkte:
+  - Die Komponenten müssen nicht zwangsläufig von einem Softwarehersteller bereitgestellt werden. Vielmehr werden
+  - Ein Passwort oder auch Kennwort ist eine Zeichenfolge, die zur Authentifizierung verwendet wird. Damit soll die Identi-
+  - arbeitung, Nutzung oder Speicherung soll ausdrücklich verhindert werden.
+  - werden muss. Diese Anforderung erweitert die Anforderung aus dem technischen Basisschutz dahingehend, dass für
+  - für privilegierte (z.B. administrative) Accounts verwendet werden muss. Im Folgenden eine nicht abschließende Liste
+  - Dieses Requirement ist eine Erweiterung des Req. 19 (Benutzerkonten müssen gegen unautorisierte Nutzung durch
+  - signaturbasierte Schutzmechanismen zur Verfügung stehen. Aus diesem Grund müssen alle IT-Systeme des IAM Fra-
+  - Eine Anmeldung an den Systemen eines IAM Frameworks aus betrieblichen Gründen muss mit
+
+### Machine Learning
+- Datei: `01_Allgemeine_Anforderungen/3_81_Machine_Learning_v4.0.pdf`
+- Kurzfassung: Dieses Dokument beschreibt die Sicherheitsanforderungen an Machine Learning Algorithmen. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - Dieses Dokument wurde auf Basis der Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien erstellt. Es ist zu
+  - ren können, die ebenfalls beachtet werden müssen.
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Wichtig zu beachten, ist ebenfalls, dass nicht jedes Produkt, jede einzelne Anforderung erfüllen muss. Dieses Doku-
+  - die er erfüllen soll, klar definiert ist, dass der Kontext, in dem er verwendet werden soll, vollständig verstanden wird
+  - Art der Daten, welche verarbeitet werden sollen
+  - Die Aufgabe des Algorithmus, der Kontext, in dem dieser verwendet werden soll, und die
+  - bedingungen, unter denen der Algorithmus Entscheidungen treffen darf, müssen klar definiert
+
+### Private Clouds
+- Datei: `01_Allgemeine_Anforderungen/3_86_Private_Clouds_v1.0.pdf`
+- Kurzfassung: Ziel dieses Dokuments ist es, eine Sicherheitsgrundlage für die Architektur einer sicheren Private Cloud-Umgebung zu schaffen, speziell im Hinblick auf moderne cloud-native Workloads. Darüber hinaus ist dieses Dokument in Teilen für Cloud-Kunden bestimmt, die eben jene Cloud-Plattformen nutzen. Alle hier im Dokument aufgeführten Anforde- rungen sind für den modernen Cloud-Einsatz und Cloud-native Workloads gedacht und mit dem Zero-Trust-Ansatz
+- Wichtige Anforderungspunkte:
+  - Cloud-Funktionen, die für die Cloud-Verwaltung, Speicher- und Netzwerkfunktionen verwendet werden, müssen in se-
+  - Ein physischer Server darf nicht mehr als eine Art von Cloud-Funktion ausführen.
+  - In konvergenten Clouds muss jede Cloud-Funktion in einer separaten virtuellen Maschine
+  - Für hyperkonvergente Clouds sind möglicherweise zusätzliche Sicherheitsmaßnahmen erforderlich, einschließlich Sy-
+  - Funktion (und virtuelle Maschine) muss ihren eigenen Verschlüsselungsschlüssel für die Datenspeicherung verwen-
+  - den. Darüber hinaus muss ein Schlüsselverwaltungssystem vorhanden sein und der Prozess muss so gestaltet wer-
+  - In hyperkonvergenten Clouds muss jede Cloud-Funktion logisch getrennt sein und für jede
+  - on unterschiedliche Verschlüsselungsschlüssel verwenden. Die Schlüssel dürfen nicht auf den für
+
+### 1. Einleitung
+- Datei: `02_Architektur/3_14_Architektur_von_Systemen_v3.2.pdf`
+- Kurzfassung: Sicherheitsanforderungen für die Architektur von IT- und NT-Systemen. Copyright © 2023 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. Inhaltsverzeichnis 1.
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung in Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - bzgl. Vertraulichkeit, Verfügbarkeit, Integrität oder Datenschutz, sogenannte "Kritische Systeme", müssen von anderen
+  - Anforderungen an eine physische Trennung (z. B. bei besonders hohem Schutzbedarf) sind zu prüfen und entspre-
+  - Motivation: Eine Kompromittierung eines Systems mit geringem Schutzbedarf ist eher wahrscheinlich. Dies darf nicht
+  - zanlagen muss entschieden werden, ob diese einen eher produktiven Charakter haben oder eher einer Testumge-
+  - Testaktivitäten mit Sicherheitsbezug wie Penetrationstests und die Durchführung von Netzwerk-Scans müssen jeder-
+  - Systeme müssen ihrem Schutzbedarf entsprechend voneinander getrennt werden.
+  - Produktionssysteme müssen von Test- und Entwicklungssystemen vollständig getrennt sein.
+
+### Architektur Zugangs- und Transportnetz
+- Datei: `02_Architektur/3_57_Architektur_Zugangs-_und_Transportnetz_v2.1.pdf`
+- Kurzfassung: In diesem Dokument werden Sicherheitsanforderungen beschrieben, die für die Absicherung von IP-basierten Zu- gangs- und Transportnetzen umgesetzt werden müssen. Copyright © 2019 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - gangs- und Transportnetzen umgesetzt werden müssen.
+  - für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs-
+  - Das Produktivnetz und dessen Systeme müssen komplett von Test- und Entwicklungssystemen getrennt werden. Hier-
+  - beider Systemarten nicht umgangen werden kann. Des weiteren muss sichergestellt werden, dass eine sicherheitsre-
+  - muss. Dies ist notwendig, um möglichst restriktive Regeln für die Kommunikation umsetzen zu können.
+  - Adressen werden u.a. für die Übertragung des Signalisierungsverkehrs genutzt. Diese Adressen müssen nicht oder
+  - ternet erreichbar sein. Daher muss die Erreichbarkeit beschränkt werden. Hierfür gibt es verschiedene Lösungsansät-
+  - Das Produktivnetz und dessen Systeme müssen von Test- und Entwicklungssystemen vollständig
+
+### Architektur Rechenzentrums- und Cloud-Infrastrukturen
+- Datei: `02_Architektur/3_58_Architektur_Rechenzentrums-_und_Cloud-Infrastrukturen_v3.0.pdf`
+- Kurzfassung: Sicherheitsanforderungen für die Architektur von Cloud- und Rechenzentrumsinfrastrukturen. Der Schwerpunkt liegt auf Netzen und System-Trennungen, insbesondere im Bereich Systemmanagement. Dies gilt sowohl für physische als auch für virtuelle Rechenzentren ("Cloud") und betrifft alle Arten von Infrastrukturkomponenten (Netze, Storage, Com- puting, Monitoring usw.). Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einsch
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - Insbesondere Systeme mit einem hohen Schutzbedarf müssen immer von anderen Systemen getrennt sein, d. h. auch
+  - Motivation: Eine Kompromittierung eines wenig geschützten Systems ist eher wahrscheinlich. Dies darf nicht dazu füh-
+  - Zur Unterstützung der geforderten Trennung im Schichtenmodell müssen alle extern erreichbaren Maschinen sowie
+  - muss sichergestellt werden, dass ein Zugriff auf einen internen Bereich nicht von extern möglich ist.
+  - Motivation: Interne Daten und Systeme dürfen nicht von extern kompromittiert werden können. Umsetzung der Prinzi-
+  - Eine Rechenzentrumsinfrastruktur oder Cloud-Plattform muss eine Trennung der darin
+  - Falls Systeme von extern (Nicht-DTAG, z. B. aus dem Internet) erreichbar sind, müssen diese auf
+
+### Secure Shell (SSH
+- Datei: `03_Betriebssysteme/3_04_Secure_Shell_(SSH)_v5.0.pdf`
+- Kurzfassung: Sicherheitsanforderungen für SSH Server, SFTP Server und das SSH Protokoll. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - SSHv1 muss permanent in der Konfiguration des SSH-Servers deaktiviert werden. Mit OpenSSH 7.4 wurde die Unter-
+  - Daemon fest. Dieser Wert muss auf "
+  - Die Version 2 vom SSH-Protokoll muss verwendet werden. (Ab OpenSSH 7.4+ automatisch erfüllt).
+  - SSH MaxStartups muss auf "10:30:100" oder weniger eingestellt sein. (OpenSSH
+  - Veraltete und unsichere Chiffren und Algorithmen dürfen nicht benutzt werden. Die folgenden Chiffren können für
+  - men sind MD5 und SHA1. Die folgenden MAC-Algorithmen sind zugelassen und müssen entsprechend für den SSH-
+  - Veraltete und unsichere Algorithmen dürfen nicht benutzt werden. Die folgenden Algorithmen können für SSH genutzt
+
+### Windows Server
+- Datei: `03_Betriebssysteme/3_15_Windows_Server_v10.0.pdf`
+- Kurzfassung: Windows Server Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Software und Hardware des Systems müssen von einem Sicherheitsschwachstellen-Support
+  - Kritische Windows Server Systeme müssen mit einer Windows Server Version im Long-Term
+  - Server Release zu wechseln, muss zwingend eine Neuinstallation durchgeführt werden.
+
+### Betriebssysteme
+- Datei: `03_Betriebssysteme/3_37_Betriebssysteme_v9.0.pdf`
+- Kurzfassung: Generische Sicherheitsanforderungen an Betriebssysteme für Server. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung in Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - nen Einsatzumfeld nicht erforderlich sind.
+  - Entsprechend müssen unmittelbar nach der Installation sämtliche auf einem System nicht erforderliche Dienste voll-
+  - ständig deaktiviert werden. Es muss sichergestellt werden, dass diese Dienste auch nach einem Neustart des Systems
+  - Ein bereitgestellter Dienst muss grundsätzlich auf allen Schnittstellen des Systems vollständig deaktiviert werden,
+  - über die eine Erreichbarkeit des Dienstes für den ordnungsgemäßen Betrieb des Systems nicht erforderlich ist. Die
+  - Die Erreichbarkeit eines Dienstes über die erforderlichen Schnittstellen muss zudem auf legitime Kommunikations-
+  - Nicht benötigte Dienste müssen deaktiviert werden.
+
+### Container
+- Datei: `03_Betriebssysteme/3_64_Container_v4.0.pdf`
+- Kurzfassung: Dieses Dokument beschreibt die funktionalen Sicherheitsanforderungen, die zum Sichern von Containern verwendet werden, zusätzlich zu den CIS-Benchmarks, die auch implementierungsorientierte Anforderungen abdecken. Copyright © 2023 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Container sollen unveränderlich sein, daher dürfen sie zur Laufzeit nicht verändert werden. Anstatt Container im Live-
+  - betrieb zu patchen, muss das Image gepatched und redeployed werden. Container Images müssen über eine vorhan-
+  - dene CI/CD Pipeline geändert werden. Diese Pipeline muss den Sicherheitsanforderungenden für CI/CD folgen
+  - Motivation: Container sollen unveränderlich sein, daher dürfen sie zur Laufzeit nicht verändert werden. Anstatt Contai-
+  - ner im Livebetrieb zu patchen, muss das Image gepatched und redeployed werden. Container Images müssen über
+  - eine vorhandene CI/CD Pipeline geändert werden. Diese Pipeline muss den Sicherheitsanforderungenden für CI/CD
+  - alpine, müssen sie das letzte verwenden, da es die spezifischste Referenz ist.
+
+### Linux OS für Server
+- Datei: `03_Betriebssysteme/3_65_Linux_OS_für_Server_v9.1.pdf`
+- Kurzfassung: Sicherheitsanforderungen für Linux OS für Server inklusive Anforderungen für IPTables, Mandatory Access Control etc. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - und der verwendeten Software benötigen Workstations unterschiedliche Anforderungen. Container-Images müssen
+  - nen Einsatzumfeld nicht erforderlich sind.
+  - Entsprechend müssen unmittelbar nach der Installation sämtliche auf einem System nicht erforderliche Dienste voll-
+  - ständig deaktiviert werden. Es muss sichergestellt werden, dass diese Dienste auch nach einem Neustart des Systems
+  - Ein bereitgestellter Dienst muss grundsätzlich auf allen Schnittstellen des Systems vollständig deaktiviert werden,
+  - über die eine Erreichbarkeit des Dienstes für den ordnungsgemäßen Betrieb des Systems nicht erforderlich ist. Die
+  - Die Erreichbarkeit eines Dienstes über die erforderlichen Schnittstellen muss zudem auf legitime Kommunikations-
+
+### Orchestrator
+- Datei: `04_Virtualisierung/3_34_Orchestrator_v5.0.pdf`
+- Kurzfassung: Dieses Dokument beschreibt die funktionalen Sicherheitsanforderungen, die zum Sichern von Orchestratoren ver- wendet werden, zusätzlich zu den CIS-Benchmark- und Hardening-Handbüchern, die auch die implementierungsori- entierten Anforderungen abdecken. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Der PatchmanagementProzess in einer Cloud-Umgebung muss so implementiert werden, dass das Patchen aller
+  - Cloud-Komponenten unter Einhaltung der SLA für die Mandanten möglich ist. Wenn die SLA dies erfordert, muss der
+  - Alle Komponenten der Cloud-Umgebung müssen in das Patch-Management-Verfahren einbezogen werden, z. B. Ma-
+  - Es muss einen Patch-Management-Prozess für die gesamte Cloud-Umgebung geben.
+  - (Überwachung, Protokollierung, Jump Hosts usw.) müssen ebenfalls in das Verfahren einbezogen werden.
+  - Auch in solchen Fällen, in denen eine kurzfristige Korrektur erforderlich ist, muss das reguläre Prüfverfahren eingehal-
+  - Die Control plane besteht aus den folgenden logischen Komponenten, die gehärtet werden müssen:
+
+### IT-Virtualisierung
+- Datei: `04_Virtualisierung/3_35_IT-Virtualisierung_v8.0.pdf`
+- Kurzfassung: Aufgrund des breiten Spektrums von Virtualisierungs-Lösungen, ist dieses Dokument für folgende Varianten gültig: - Servervirtualisierung - Clientvirtualisierung - Clientbasierte Virtualisierungslösungen - Desktopvirtualisierung - Applikationsvirtualisierung - Application Streaming - Terminal Services Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - findliche Umgebung und deren Systeme erhalten soll. Der transparente Benutzerzugang wird also auf dem Terminal-
+  - welche Voraussetzungen diese erfüllen müssen, ist nicht Regelungsbestandteil dieser Sicherheitsanforderung.
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - (1) Bietet der Bereitstellungs-Server verschiedene Formen von Downloads an, müssen durch Verschlüsselung
+  - sftp), müssen die zugehörig präsentierten Server-Zertifikate oder Server-Keys/Fingerprints bei jedem Down-
+  - Die Integritätsprüfung soll sicherstellen, dass die erhaltene Software frei von Manipulationen und Schadsoftwa-
+  - re-Befall ist. Sofern vorhanden, müssen zur Prüfung die vom Hersteller implementierten Mechanismen verwendet wer-
+
+### Hyper-V Server
+- Datei: `04_Virtualisierung/3_49_Hyper-V_Server_v8.0.pdf`
+- Kurzfassung: Hyper-V Server Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - nen Einsatzumfeld nicht erforderlich sind.
+  - Entsprechend müssen unmittelbar nach der Installation sämtliche auf einem System nicht erforderliche Dienste voll-
+  - ständig deaktiviert werden. Es muss sichergestellt werden, dass diese Dienste auch nach einem Neustart des Systems
+  - Ein bereitgestellter Dienst muss grundsätzlich auf allen Schnittstellen des Systems vollständig deaktiviert werden,
+  - über die eine Erreichbarkeit des Dienstes für den ordnungsgemäßen Betrieb des Systems nicht erforderlich ist. Die
+  - Die Erreichbarkeit eines Dienstes über die erforderlichen Schnittstellen muss zudem auf legitime Kommunikations-
+  - Nicht benötigte Dienste müssen deaktiviert werden.
+
+### Container
+- Datei: `04_Virtualisierung/3_64_Container_v5.0.pdf`
+- Kurzfassung: Dieses Dokument beschreibt die funktionalen Sicherheitsanforderungen, die zum Sichern von Containern verwendet werden, zusätzlich zu den CIS-Benchmarks, die auch implementierungsorientierte Anforderungen abdecken. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Container sollen unveränderlich sein, daher dürfen sie zur Laufzeit nicht verändert werden. Anstatt Container im Live-
+  - betrieb zu patchen, muss das Image gepatched und redeployed werden. Container Images müssen über eine vorhan-
+  - dene CI/CD Pipeline geändert werden. Diese Pipeline muss den Sicherheitsanforderungenden für CI/CD folgen
+  - Motivation: Container sollen unveränderlich sein, daher dürfen sie zur Laufzeit nicht verändert werden. Anstatt Contai-
+  - ner im Livebetrieb zu patchen, muss das Image gepatched und redeployed werden. Container Images müssen über
+  - eine vorhandene CI/CD Pipeline geändert werden. Diese Pipeline muss den Sicherheitsanforderungenden für CI/CD
+  - zanlagen muss entschieden werden, ob diese einen eher produktiven Charakter haben oder eher einer Testumge-
+
+### Microservice (Container basierter Web Service
+- Datei: `04_Virtualisierung/3_84_Microservice_(Container_basierter_Web_Service)_v7.1.pdf`
+- Kurzfassung: Unter Mikroservice ist typischerweise ein Softwarekomponente gemeint, die als Docker Container ein Application Programming Interface (API) in Form einer REST-API bereitstellt. Der Mikroservice interagiert nur mit anderen Ser- vicen oder Systemen. Das Dokument fasst alle für diesen Mikroservice relevanten Anforderungen zusammen. Da- durch wird es ermöglicht, den Mikroservice mit genau einem SoC (Statement of Compliance) in einem SDSK (
+- Wichtige Anforderungspunkte:
+  - Container sollen unveränderlich sein, daher dürfen sie zur Laufzeit nicht verändert werden. Anstatt Container im Live-
+  - betrieb zu patchen, muss das Image gepatched und redeployed werden. Container Images müssen über eine vorhan-
+  - dene CI/CD Pipeline geändert werden. Diese Pipeline muss den Sicherheitsanforderungenden für CI/CD folgen
+  - Motivation: Container sollen unveränderlich sein, daher dürfen sie zur Laufzeit nicht verändert werden. Anstatt Contai-
+  - ner im Livebetrieb zu patchen, muss das Image gepatched und redeployed werden. Container Images müssen über
+  - eine vorhandene CI/CD Pipeline geändert werden. Diese Pipeline muss den Sicherheitsanforderungenden für CI/CD
+  - alpine, müssen sie das letzte verwenden, da es die spezifischste Referenz ist.
+  - Images müssen in der Registry auf bekannte Sicherheitslücken gescannt werden.
+
+### Datenbanksysteme
+- Datei: `05_Datenbanken/3_16_Datenbanksysteme_v9.0.pdf`
+- Kurzfassung: Datenbanksysteme - Allgemeine Sicherheitsanforderungen Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - (1) Bietet der Bereitstellungs-Server verschiedene Formen von Downloads an, müssen durch Verschlüsselung
+  - sftp), müssen die zugehörig präsentierten Server-Zertifikate oder Server-Keys/Fingerprints bei jedem Down-
+  - Die Integritätsprüfung soll sicherstellen, dass die erhaltene Software frei von Manipulationen und Schadsoftwa-
+  - re-Befall ist. Sofern vorhanden, müssen zur Prüfung die vom Hersteller implementierten Mechanismen verwendet wer-
+  - Abgleich von kryptografischen Hash Werten (z. B. SHA256, SHA512) der erhaltenen Software gegen Soll-
+  - Eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und auf Integrität geprüft
+
+### MySQL / Maria Datenbanksysteme
+- Datei: `05_Datenbanken/3_24_MySQL_Maria_Datenbanksysteme_v9.0.pdf`
+- Kurzfassung: Sicherheitsanforderungen für MySQL-Datenbanksysteme inklusive Forks wie MariaDB Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - finden. Darüber hinaus müssen sich die unterstützten Plattformen der MySQL Enterprise Edition innerhalb des MyS-
+  - Die eingesetzte MySQL / Maria DB Version muss sich in der Active- oder Extended-Lifecycle
+  - od gemäß der MySQL Lifecycle Policy befinden bzw. es muss kommerzieller Support für diese
+  - Die Default Datenbanken wie test müssen gelöscht werden.
+  - Es muss sichergestellt sein, dass keine Benutzerkonten ohne Benutzername (Anonymous
+  - Motivation: Defaultpasswörter für Datenbanken stellen ein hohes Sicherheitsrisiko dar. Der Administrator muss sie
+  - Wichtig ist es, den GRANT-Prozess für einen neuen Benutzer mit einem leeren Passwort zu verhindern. Daher muss
+
+### Oracle-Datenbanksysteme
+- Datei: `05_Datenbanken/3_29_Oracle-Datenbanksysteme_v9.0.pdf`
+- Kurzfassung: Dieses Dokument wurde auf Basis der Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien erstellt. Ausge- hend von der Sicherheitsanforderung Datenbanksysteme  Allgemeine Sicherheitsanforderungen enthält es, mit dem Ziel eines einheitlichen Sicherheitsstandards, herstellerspezifische Sicherheitsanforderungen an Oracle-Datenbanksysteme. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie)
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Die verwendete Datenbank-Software muss vom Hersteller für den produktiven Einsatz empfohlen
+  - das DBMS installiert sein bzw. muss deaktiviert werden.
+  - Ist die Verwendung des Oracle HTTP Servers erforderlich, so müssen die Verantwortlichen sicherstellen, dass dieser
+  - minstanz wie das DBMS installiert sein bzw. muss deaktiviert werden.
+  - Wird Oracle Application Express benötigt, so müssen die Verantwortlichen sicherstellen, dass dieser auf einem dedi-
+  - Nicht benötigte Komponenten des Oracle-DBMS dürfen nicht installiert werden.
+  - Der Oracle HTTP Server darf nicht auf dem DBMS-Server installiert sein bzw. muss deaktiviert
+
+### Microsoft SQL Server
+- Datei: `05_Datenbanken/3_30_Microsoft_SQL_Server_v8.0.pdf`
+- Kurzfassung: Microsoft SQL Server Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Die Version des MS SQL Servers muss für den produktiven Betrieb lizensierbar sein.
+  - Die SQL Server Version muss derart in Support befinden, daß Security Patches bereitgestellt
+  - Bekannte Beispieldatenbanken (pubs, Northwind bzw. jede AdventureWorks-Datenbank) dürfen nicht auf Produkti-
+  - Das Standard-DB-Administratorkonto (sa) muss deaktiviert werden.
+  - Installierte Beispieldatenbanken müssen aus der SQL Server Installation entfernt werden.
+  - Die Berechtigungen auf einem System müssen so weit eingeschränkt werden, dass ein Benutzer nur auf Daten zugrei-
+  - Neben dem Zugriff auf Daten muss auch die Ausführung von Anwendungen und deren Bestandteilen mit möglichst
+
+### PostgreSQL Datenbanken
+- Datei: `05_Datenbanken/3_60_PostgreSQL_Datenbanken_v10.0.pdf`
+- Kurzfassung: Dieses Papier beschreibt Sicherheitsanforderungen an die Entwicklung / Betrieb von PostgreSQL Datenbanken. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - In Produktionsumgebungen muss eine durch die Community bzw. kommerziellen Hersteller
+  - Die Berechtigungen der Verzeichnisse müssen wie folgt gesetzt werden:
+  - Zusätzlich muss die umask des postgres Benutzers auf 0077 gesetzt werden, damit neue Dateien automatisch mit
+  - Falls erforderlich, können die Berechtigungen mit den Linux Kommandos chmod und chown angepasst werden.
+  - Ein Datenbankdienst darf nicht mit Root-Rechten oder anderen administrativen Rechten des
+  - Das PostgreSQL "data_directory" Verzeichnis und Konfigurationsdateien müssen exklusiv dem
+  - triebssystem Account der Datenbank zugewiesen werden. Anderen Systemuser müssen die
+
+### Hadoop
+- Datei: `05_Datenbanken/3_98_Hadoop_v2.0.pdf`
+- Kurzfassung: Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - Eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und auf Integrität geprüft
+  - (1) Bietet der Bereitstellungs-Server verschiedene Formen von Downloads an, müssen durch Verschlüsselung
+  - sftp), müssen die zugehörig präsentierten Server-Zertifikate oder Server-Keys/Fingerprints bei jedem Down-
+  - Die Integritätsprüfung soll sicherstellen, dass die erhaltene Software frei von Manipulationen und Schadsoftwa-
+  - re-Befall ist. Sofern vorhanden, müssen zur Prüfung die vom Hersteller implementierten Mechanismen verwendet wer-
+  - Abgleich von kryptografischen Hash Werten (z. B. SHA256, SHA512) der erhaltenen Software gegen Soll-
+  - Software aus öffentlichen Registries muss vor dem Einsatz einer erweiterten Integritätsprüfung unterzogen werden.
+
+### Web-Anwendungen
+- Datei: `06_Server_Applikationen/3_06_Web-Anwendungen_v8.0.pdf`
+- Kurzfassung: Dieses Dokument basiert auf Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien und definiert die Sicher- heitsanforderungen an eine sichere Implementierung von Web-Anwendungen. Die hier beschriebenen Anforderun- gen müssen erfüllt werden, um sicherzustellen, dass eine Web-Anwendung nicht ohne Weiteres von Angreifern missbraucht werden kann. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikroko
+- Wichtige Anforderungspunkte:
+  - gen müssen erfüllt werden, um sicherzustellen, dass eine Web-Anwendung nicht ohne Weiteres von Angreifern
+  - aus als Umsetzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen
+  - Solche Komponenten müssen bei der Installation des Systems gezielt abgewählt (nicht mit installiert) werden oder -
+  - oder die Funktion des Systems nicht erforderlich ist.
+  - Solche Funktionen müssen unmittelbar nach der initialen Installation über die Konfigurationseinstellungen der Softwa-
+  - Solche Funktionen, wie beispielsweise nicht benötigte Schnittstellen, müssen ebenfalls unmittelbar nach der initialen
+  - rend des normalen Betriebs nicht aktiv sein müssen.
+  - Nicht benötigte Funktionen in der eingesetzten Software und Hardware müssen deaktiviert
+
+### SAP Netweaver Umgebungen
+- Datei: `06_Server_Applikationen/3_22_SAP_Netweaver_Umgebungen_v13.0.pdf`
+- Kurzfassung: Das Requirement ist gültig für: Netweaver SAP-Systeme SAP HANA SAProuter SAP Web Dispatcher Fiori-Applikation-Server, Fiori-Apps Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Wenn es sich bei dem System ausschließlich um ein SAP Netweaver System handelt, müssen bei den Systemeigen-
+  - Bei der Auswahl von dem Anwendungstyp "SAP" muss im Bereich "Datensicherheit" der Systemeigenschaften bei der
+  - nen Einsatzumfeld nicht erforderlich sind.
+  - Entsprechend müssen unmittelbar nach der Installation sämtliche auf einem System nicht erforderliche Dienste voll-
+  - ständig deaktiviert werden. Es muss sichergestellt werden, dass diese Dienste auch nach einem Neustart des Systems
+  - Ein bereitgestellter Dienst muss grundsätzlich auf allen Schnittstellen des Systems vollständig deaktiviert werden,
+  - über die eine Erreichbarkeit des Dienstes für den ordnungsgemäßen Betrieb des Systems nicht erforderlich ist. Die
+
+### Application Server
+- Datei: `07_Applikationsserver/3_10_Application_Server_v7.0.pdf`
+- Kurzfassung: Dieses Dokument wurde auf Basis der Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien erstellt und defi- niert die Anforderungen an eine sichere Implementierung von Application Servern. Die hier beschriebenen Anforde- rungen müssen erfüllt werden, um sicherzustellen, dass ein Application Server nicht ohne weiteres von Angreifern missbraucht werden kann. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschli
+- Wichtige Anforderungspunkte:
+  - rungen müssen erfüllt werden, um sicherzustellen, dass ein Application Server nicht ohne weiteres von Angreifern
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - Falls das nicht der Fall ist, müssen die Sicherheitsanforderungen an Webserver durch den Application Server oder ei-
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+
+### Tomcat Application Server
+- Datei: `07_Applikationsserver/3_39_Tomcat_Application_Server_v7.0.pdf`
+- Kurzfassung: Dieses Dokument wurde auf Basis der Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien erstellt und defi- niert die Anforderungen an eine sichere Implementierung von Tomcat Application Servern. Die hier beschriebenen Anforderungen müssen erfüllt werden, um sicherzustellen, dass ein Tomcat Application Server nicht ohne weiteres von Angreifern missbraucht werden kann. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiederga
+- Wichtige Anforderungspunkte:
+  - Anforderungen müssen erfüllt werden, um sicherzustellen, dass ein Tomcat Application Server nicht ohne weiteres
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - Falls das nicht der Fall ist, müssen die Sicherheitsanforderungen an Webserver durch den Application Server oder ei-
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der die Software im Einsatz ver-
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - Die Integritätsprüfung soll sicherstellen, dass die erhaltene Software frei von Manipulationen ist. Das erfolgt durch den
+  - Abgleich von kryptografischen Hash Werten (z. B. SHA256, SHA512) der erhaltenen Software gegen Soll-Werte, die
+  - Für die eingesetzte Tomcat-Version muss Sicherheitsschwachstellen-Support durch die
+
+### Webserver
+- Datei: `08_Webserver/3_03_Webserver_v8.0.pdf`
+- Kurzfassung: Diese Sicherheitsanforderungen basieren auf den im Konzern gültigen Sicherheitsrichtlinien und definieren die Anfor- derungen an eine sichere Implementierung von Webservern. Die hier beschriebenen Anforderungen müssen erfüllt werden, um sicherzustellen, dass ein Webserver nicht ohne weiteres von Angreifern missbraucht werden kann. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Ausw
+- Wichtige Anforderungspunkte:
+  - derungen an eine sichere Implementierung von Webservern. Die hier beschriebenen Anforderungen müssen erfüllt
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - Software und Hardware des Systems müssen von einem Sicherheitsschwachstellen-Support
+
+### Microsoft IIS
+- Datei: `08_Webserver/3_32_Microsoft_IIS_v8.0.pdf`
+- Kurzfassung: Diese Sicherheitsanforderung basiert auf den im Konzern gültigen Sicherheitsrichtlinien und definiert die Anforderun- gen an eine sichere Implementierung von Microsoft IIS Webservern. Die hier beschriebenen Anforderungen müssen erfüllt werden, um sicherzustellen, dass ein Microsoft IIS Webserver nicht ohne weiteres von sachkundigen Angrei- fern missbraucht werden kann. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (ei
+- Wichtige Anforderungspunkte:
+  - gen an eine sichere Implementierung von Microsoft IIS Webservern. Die hier beschriebenen Anforderungen müssen
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - Software und Hardware des Systems müssen von einem Sicherheitsschwachstellen-Support
+
+### Apache-Webserver
+- Datei: `08_Webserver/3_36_Apache-Webserver_v8.0.pdf`
+- Kurzfassung: Diese Sicherheitsanforderung basiert auf den im Konzern gültigen Sicherheitsrichtlinien und definiert die Anforderun- gen an eine sichere Implementierung von Apache-Webservern. Die hier beschriebenen Anforderungen müssen er- füllt werden, um sicherzustellen, dass ein Apache-Webserver nicht ohne weiteres von sachkundigen Angreifern missbraucht werden kann. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich M
+- Wichtige Anforderungspunkte:
+  - gen an eine sichere Implementierung von Apache-Webservern. Die hier beschriebenen Anforderungen müssen
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - Software und Hardware des Systems müssen von einem Sicherheitsschwachstellen-Support
+
+### Load Balancer als Webserver
+- Datei: `08_Webserver/3_59_Load_Balancer_als_Webserver_v5.0.pdf`
+- Kurzfassung: Dieses Dokument wurde auf Basis der Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien erstellt. Es defi- niert die Anforderungen an eine sichere Konfiguration von Load Balancern, die als Webserver genutzt werden. Die hier beschriebenen Anforderungen müssen erfüllt werden, um sicherzustellen, dass die Webserver-Funktionalität des Load Balancers nicht ohne weiteres von sachkundigen Angreifern missbraucht werden kann.
+- Wichtige Anforderungspunkte:
+  - hier beschriebenen Anforderungen müssen erfüllt werden, um sicherzustellen, dass die Webserver-Funktionalität des
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - tät eines Proxies erforderlich ist.
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Bekannte Schwachstellen in Software- und Hardware Komponenten müssen mittels Installation von verfügbaren Sy-
+
+### NGINX
+- Datei: `08_Webserver/3_80_NGINX_v7.0.pdf`
+- Kurzfassung: Diese Sicherheitsanforderung basiert auf den im Konzern gültigen Sicherheitsrichtlinien und definiert die Anforderun- gen an eine sichere Implementierung von Nginx Webservern. Die hier beschriebenen Anforderungen müssen erfüllt werden, um sicherzustellen, dass ein Nginx Webserver nicht ohne weiteres von Angreifern missbraucht werden kann. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie 
+- Wichtige Anforderungspunkte:
+  - gen an eine sichere Implementierung von Nginx Webservern. Die hier beschriebenen Anforderungen müssen erfüllt
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Software und Hardware des Systems müssen von einem Sicherheitsschwachstellen-Support
+  - Die Standardfehlerseiten müssen durch benutzerspezifisch definierte Fehlerseiten ersetzt werden.
+
+### Client Computer
+- Datei: `09_Endgeraete/3_19_Client_Computer_v7.0.pdf`
+- Kurzfassung: Anforderungen zur Absicherung von Client Computern. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Dieses Anforderungspapier bietet die Grundlage welche Mindestanforderungen an einen Client erfüllt sein müssen,
+  - chungen von Projekten müssen im SDSK entsprechend dokumentiert und durch das Sicherheitsmanagement der
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - Die Sicherheitsmechanismen des BIOS/EFI müssen vorhanden sein und zur sicheren Nutzung
+  - Eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und auf Integrität geprüft
+  - (1) Bietet der Bereitstellungs-Server verschiedene Formen von Downloads an, müssen durch Verschlüsselung
+  - sftp), müssen die zugehörig präsentierten Server-Zertifikate oder Server-Keys/Fingerprints bei jedem Down-
+
+### Endgeräte
+- Datei: `09_Endgeraete/3_33_Endgeräte_v5.3.pdf`
+- Kurzfassung: Endgeräte Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Vorgaben in Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen
+  - Das Gerät muss sicherstellen, dass Benutzer über den sicherheitsrelevanten Zustand und Zustandsänderungen infor-
+  - einer Entscheidung gefragt wird (prompting). Die Integrität und Authentizität dieser Informationen muss durch das Ge-
+  - rät sichergestellt werden. Falls erforderlich, kann das Gerät dazu sicherheitsrelevante Ereignisse protokollieren.
+  - Der Benutzer muss wissen, in welchem Zustand sich sein Gerät befindet, wenn dieser Zustand Einfluss auf
+  - TLS im Gegensatz zu Klartext-HTTP), die unterschiedliche Sicherheitseigenschaften aufweisen, muss anzei-
+  - Das Gerät muss den Benutzer über den sicherheitsrelevanten Zustand informieren.
+  - eignisse mit Zeitangabe informiert, dann muss das Endgerät über eine verlässliche Systemzeit (
+
+### Homegateway
+- Datei: `09_Endgeraete/3_40_Homegateway_v3.6.pdf`
+- Kurzfassung: Homegateway Copyright © 2024 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - sche Telekom Gruppe an das Endgerät umfasst. In der Regel ist es nicht erforderlich, zusätzliche Funktionalitäten in
+  - Ein Home Gateway basiert oftmals auf einem bestehenden Design, und der Lieferant muss Softwarekomponenten
+  - der Deutsche Telekom Gruppe geforderte Funktionalität bereitgestellt wird. In diesem Fall muss die Deutsche Tele-
+  - und muss überarbeitet werden. Daher ist es unerlässlich, dass die Deutsche Telekom Gruppe von jeder zusätzlichen
+  - Die Übersicht der Netzwerkdienste muss alle aktiven Dienste auf jedwedem Netzwerkinterface des Home Gateways
+  - lediglich an das localhost Interface gebunden sind, müssen hier nicht betrachtet werden.
+  - Die Übersicht muss jeweils pro Netzwerkdienst das Interface, an das der Dienst gebunden ist, den tcp/udp Port, das
+
+### Mobile Endgeräte
+- Datei: `09_Endgeraete/3_44_Mobile_Endgeräte_v6.3.pdf`
+- Kurzfassung: Mobile Endgeräte Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - Das Gerät muss sicherstellen, dass Benutzer über den sicherheitsrelevanten Zustand und Zustandsänderungen infor-
+  - einer Entscheidung gefragt wird (prompting). Die Integrität und Authentizität dieser Informationen muss durch das Ge-
+  - rät sichergestellt werden. Falls erforderlich, kann das Gerät dazu sicherheitsrelevante Ereignisse protokollieren.
+  - Der Benutzer muss wissen, in welchem Zustand sich sein Gerät befindet, wenn dieser Zustand Einfluss auf
+  - TLS im Gegensatz zu Klartext-HTTP), die unterschiedliche Sicherheitseigenschaften aufweisen, muss anzei-
+  - Das Gerät muss den Benutzer über den sicherheitsrelevanten Zustand informieren.
+  - eignisse mit Zeitangabe informiert, dann muss das Endgerät über eine verlässliche Systemzeit (
+
+### COTS Residential Gateways
+- Datei: `09_Endgeraete/3_71_COTS_Residential_Gateways_v1.1.pdf`
+- Kurzfassung: Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte: Keine eindeutigen Muss-/Soll-Sätze automatisch erkannt.
+
+### Proxyserver
+- Datei: `10_Netzwerkkomponenten/3_12_Proxyserver_v8.0.pdf`
+- Kurzfassung: Dieses Dokument wurde auf Basis der Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien erstellt. Es defi- niert die Sicherheitsanforderungen für den sicheren Betrieb von Proxyservern in der Deutschen Telekom Gruppe. Es ist von entscheidender Bedeutung, diese Anforderungen zu erfüllen. Nur so lässt sich sicherstellen, dass sich Proxy- server nicht ohne Weiteres von Angreifern missbrauchen lassen. Copyright © 2025 by Deutsche Telekom AG.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - nen Einsatzumfeld nicht erforderlich sind.
+  - Entsprechend müssen unmittelbar nach der Installation sämtliche auf einem System nicht erforderliche Dienste voll-
+  - ständig deaktiviert werden. Es muss sichergestellt werden, dass diese Dienste auch nach einem Neustart des Systems
+  - Ein bereitgestellter Dienst muss grundsätzlich auf allen Schnittstellen des Systems vollständig deaktiviert werden,
+  - über die eine Erreichbarkeit des Dienstes für den ordnungsgemäßen Betrieb des Systems nicht erforderlich ist. Die
+  - Die Erreichbarkeit eines Dienstes über die erforderlichen Schnittstellen muss zudem auf legitime Kommunikations-
+  - Nicht benötigte Dienste müssen deaktiviert werden.
+
+### Router und Switche
+- Datei: `10_Netzwerkkomponenten/3_23_Router_und_Switche_v8.0.pdf`
+- Kurzfassung: In diesem Dokument werden die spezifischen technischen Sicherheitsanforderungen für Router und Switche be- schrieben. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - ne unverschlüsselte Datenübertragung oder unzureichende Authentifizierung. Diese Dienste müssen komplett deakti-
+  - antwortet werden, sondern muss auf einen Port, auf dem das verschlüsselte HTTPS-Protokoll genutzt wird, umgeleitet
+  - Discovery Protokolle wie das Cisco Discovery Protocol (CDP) oder Link Layer Discovery Protocol (LLDP) müssen kom-
+  - plett deaktiviert werden. In begründeten Ausnahmefällen dürfen diese Protokolle genutzt werden. Hierbei muss aller-
+  - Endgeräten müssen Discovery Protokolle deaktiviert werden.
+  - Die IPv4- und IPv6-Adressen für alle Schnittstellen müssen fest konfiguriert werden. Dies bedeutet, dass eine automati-
+  - Unsichere und nicht genutzte Dienste und Protokolle müssen deaktiviert werden.
+
+### Operational Security Policies for Mobile Networks
+- Datei: `10_Netzwerkkomponenten/3_38_Operational_Security_Policies_for_Mobile_Netw_v1.4.pdf`
+- Kurzfassung: Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte: Keine eindeutigen Muss-/Soll-Sätze automatisch erkannt.
+
+### Netzelemente
+- Datei: `10_Netzwerkkomponenten/3_42_Netzelemente_v8.0.pdf`
+- Kurzfassung: Dieses Dokument beinhaltet Sicherheitsanforderungen für Netzelemente, die Transport-, Switching- oder Routing- Funktionen gemäß OSI-Schicht 2 und 3 für Mobilfunk- und Festnetzdienste bereitstellen. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - ne unverschlüsselte Datenübertragung oder unzureichende Authentifizierung. Diese Dienste müssen komplett deakti-
+  - antwortet werden, sondern muss auf einen Port, auf dem das verschlüsselte HTTPS-Protokoll genutzt wird, umgeleitet
+  - Discovery Protokolle wie das Cisco Discovery Protocol (CDP) oder Link Layer Discovery Protocol (LLDP) müssen kom-
+  - plett deaktiviert werden. In begründeten Ausnahmefällen dürfen diese Protokolle genutzt werden. Hierbei muss aller-
+  - Endgeräten müssen Discovery Protokolle deaktiviert werden.
+  - Die IPv4- und IPv6-Adressen für alle Schnittstellen müssen fest konfiguriert werden. Dies bedeutet, dass eine automati-
+  - Unsichere und nicht genutzte Dienste und Protokolle müssen deaktiviert werden.
+
+### SNMP
+- Datei: `10_Netzwerkkomponenten/3_45_SNMP_v8.0.pdf`
+- Kurzfassung: SNMP Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Es muss SNMP in der Version 3 verwendet werden.
+  - Solche vordefinierten Authentisierungsmerkmale müssen unmittelbar nach der Übernahme bzw. Installation des Sy-
+  - Sämtliche Benutzerkonten des Systems müssen vor einer unberechtigten Nutzung geschützt werden.
+  - Es müssen mindestens zwei Authentisierungsmerkmale miteinander kombiniert werden.
+  - Der SNMP Server muss verhindern, dass zu kleine Werte für die Länge des HMAC verwendet
+  - Vordefinierte Authentisierungsmerkmale müssen geändert werden.
+  - Benutzerkonten müssen mit mindestens zwei Authentisierungsmerkmalen aus unterschiedlichen
+
+### Netzbasierte Speichersysteme
+- Datei: `10_Netzwerkkomponenten/3_55_Netzbasierte_Speichersysteme_v8.0.pdf`
+- Kurzfassung: Netzbasierte Speichersysteme Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - austauschen. Wenn an einem FC-Switch ausschließlich Hosts angeschlossen sind, muss der F-Porttyp bei allen Ports
+  - Bei Systemen mit einem hohem Schutzbedarf muss eine gegenseitige Authentifizierung der FC-
+  - Der Zugangsmodus zur Default-Zone muss für hinzukommende FC-Komponenten verweigert
+  - Die Porttypen (z. B. E-, F-Port) müssen bei allen Ports für den jeweiligen Einsatz fest definiert
+  - Hardware-enforcement based Zoning muss verwendet werden.
+  - Die Hardware-enforcement based Zoning Konfiguration muss auf Basis von Port-WWNs (WWPN)
+  - Es muss die Port Security für alle FC-Ports des Frontends aktiviert werden.
+
+### Cisco Smart Licensing Infrastrukturen
+- Datei: `10_Netzwerkkomponenten/3_70_Cisco_Smart_Licensing_Infrastrukturen_v6.0.pdf`
+- Kurzfassung: Richtlinie mit Anforderungen für die Absicherung von Cisco Smart Licensing Infrastrukturen sowie der Smart Licen- sing Funktionen in entsprechenden Cisco Produkten. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Diese Kommunikation muss über eine lokal installierte "Cisco SSM On-Prem" Instanz kanalisiert werden.
+  - nicht im zentralen CSSM und in Richtung des Herstellers sichtbar machen zu müssen und erhöht somit die Vertrau-
+  - Eine Cisco SSM On-Prem Instanz muss in einer abgegrenzten Netzwerk-Zone platziert werden und darf sich diese
+  - Instanz auftretende Netzwerk-Kommunikation muss kontrollierbar und reglementierbar sein, um im täglichen Betrieb
+  - (CSSM) im Internet muss über eine lokale "SSM On-Prem" Instanz geleitet werden.
+  - Cisco SSM On-Prem Instanzen müssen in einer separaten DMZ platziert werden, die
+  - Sämtliche eingehenden und ausgehenden Netzwerk-Verbindungen einer Cisco SSM On-Prem Instanz müssen durch
+
+### Fremdfirmen
+- Datei: `11_Fremdfirmenzugang/3_11_Fremdfirmen_v2.1.pdf`
+- Kurzfassung: Fremdfirmen Copyright © 2021 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Der Identitätsmanagementprozess muss eingeführt und nachvollziehbar dokumentiert sein. Informationen über die-
+  - sen Prozess muss die Fremdfirma auf Anfrage der Deutschen Telekom Gruppe umgehend bereitstellen können. Die
+  - Zuweisung von Identitäten muss dem Berechtigungskonzept folgen, das die Deutsche Telekom Gruppe bereitstellt.
+  - Die Fremdfirma muss sicherstellen, dass die autorisierten Nutzer, die im Zusammenhang des Auftrages Zugang zu IT-
+  - Erbringen Fremdfirmen Dienstleistungen, müssen die Auftraggeber die für die IT-/NT-Systeme
+  - Die Fremdfirma muss über einen technischen und organisatorischen
+  - Die Fremdfirma muss in der Lage sein, der Deutschen Telekom Gruppe jederzeit detaillierte
+
+### Fremdfirmenzugänge
+- Datei: `11_Fremdfirmenzugang/3_20_Fremdfirmenzugänge_v8.0.pdf`
+- Kurzfassung: Zu den alltäglichen Anforderungen an die Unternehmen der Deutschen Telekom Gruppe gehört es, Fremdfirmen Zu- gang zu internen IT/NT-Systemen zu gewähren. Die Zugangsszenarien reichen je nach Zielsystem und gewünschter Aktivität vom einfachen Webzugang bis hin zu Sessions mit interaktiven Anzeigen. Es ist eine erfolgskritische Aufga- be zur Aufrechterhaltung eines angemessenen Schutzniveaus für IT/NT-Systeme und Daten, diese Verbindungen
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - umgekehrt geben. Eine Zugangsplattform für Fremdfirmen in einer DMZ (3rd Party Access Platform, 3PAP) muss über
+  - die für die Durchsetzung der Sicherheitsanforderungen erforderlichen Funktionen verfügen. Die 3PAP muss immer
+  - Es muss für einen effektiven Kontrollpunkt zur Umsetzung der Sicherheitsanforderungen gesorgt werden.
+  - Die einzelnen Funktionselemente müssen in verschiedenen, durch ein Firewall-Gateway geschützten (V)LANs unter-
+  - Alle Verbindungen müssen in einer DMZ terminiert werden.
+  - Die Netztrennung der 3PAP und angrenzender Dienste muss sich an deren spezifischen
+  - Die 3PAP muss mit zustandsorientierten (stateful) Firewall-Gateways geschützt werden.
+
+### Client-Anwendungen
+- Datei: `12_Mobile_Applikationen/3_54_Client-Anwendungen_v7.0.pdf`
+- Kurzfassung: Unter die Bezeichnung Client-Anwendung fällt jede Anwendung/Applikation oder auch kurz allgemein App ge- nannt, welche auf mobiler oder Desktop Hardware ausgeführt wird. Die Ausführung kann dabei autark oder in Kom- munikationsbeziehung mit einem Backend nach dem Client-Server-Modell stattfinden. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung in Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - (1) Bietet der Bereitstellungs-Server verschiedene Formen von Downloads an, müssen durch Verschlüsselung
+  - sftp), müssen die zugehörig präsentierten Server-Zertifikate oder Server-Keys/Fingerprints bei jedem Down-
+  - Die Integritätsprüfung soll sicherstellen, dass die erhaltene Software frei von Manipulationen und Schadsoftwa-
+  - re-Befall ist. Sofern vorhanden, müssen zur Prüfung die vom Hersteller implementierten Mechanismen verwendet wer-
+  - Abgleich von kryptografischen Hash Werten (z. B. SHA256, SHA512) der erhaltenen Software gegen Soll-
+  - Eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und auf Integrität geprüft
+
+### 1. Einleitung
+- Datei: `12_Mobile_Applikationen/4_1_1_OWASP_Mobile_Application_Security_Verificati_v1.1.pdf`
+- Kurzfassung: Android / iOS Anforderungen nach dem OWASP Mobile Application Security Verification Standard und OWASP Mo- bile Application Security Testing Guide . Dieses Dokument enthält Anforderungen für Softwarearchitekten und - ent- wickler, die mobile Anwendungen sicher entwickeln möchten. Es dient als Industriestandard, um die Sicherheit mobi- ler Anwendungen zu überprüfen. Es klärt auch die Rolle von Softwareschutzmechanismen bei der mobilen
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung in Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Jenseits der in diesem Dokument beschriebenen Anforderungen, ist zu berücksichtigen, dass für die Distribution von
+  - terprise Appstore zu nutzen ist. Ausserdem muss bei Eigenentwicklungen solcher Apps das SDK für Container ver-
+  - Alle Komponenten der mobilen App sind identifiziert und für den Betrieb der App erforderlich.
+  - gen. In beiden Fällen muss gewährleistet sein, dass das Schlüsselmaterial adäquat geschützt übermittelt und gespei-
+  - dates schnellstmöglich ausgerollt werden müssen Apps über entsprechend eigene Mechanismen verfügen.
+  - dürfen nicht in den Logs enthalten sein. Logs können typischerweise mit Dritten geteilt werden, bspw. für notwendige
+  - gung des Anwenders und aktiven Nutzung eines anderen Dienstes vorausgeht, soll sichergestellt werden, dass die
+
+### Externes Hosting
+- Datei: `13_Betriebliche_Sicherheitsanforderungen/3_08_Externes_Hosting_v2.7.pdf`
+- Kurzfassung: Externes Hosting Copyright © 2023 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - gen Landesgesellschaft sein. Der Ansprechpartner muss für technische/nicht technische Aspekte zur Verfügung ste-
+  - Im Fall eines Sicherheitsvorfalls muss schnell und kompetent gehandelt werden können. Zur Vermeidung
+  - Im Fall eines Sicherheitsvorfalls muss unverzüglich gehandelt werden können. Eine ständige Erreichbar-
+  - Motivation: Im Fall eines Sicherheitsvorfalls muss schnell und kompetent gehandelt werden können. Zur Vermei­dung
+  - Der Hosting Provider/SaaS Provider muss einen entscheidungsbefugten Ansprechpartner für alle
+  - Der Hosting Provider/SaaS Provider muss eine telefonische 7x24 Stunden-Erreichbarkeit für alle
+  - Sicherheitsthemen sicherstellen. Der HostingProvider/SaaS Provider muss diese Erreichbarkeit
+
+### Betrieb
+- Datei: `13_Betriebliche_Sicherheitsanforderungen/3_61_Betrieb_v4.0.pdf`
+- Kurzfassung: Anforderungen für einen sicheren Betrieb von Systemen. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - B. Einspielen von Patches) müssen zeitnah gemäß zuvor getroffenen Regelungen bearbeitet werden. Dazu muss ein
+  - Der jeweilige (technische) Systemverantwortliche muss sicherstellen, dass dieser Kontakt benannt ist und in der Lage
+  - Motivation: Im Fall eines Sicherheitsvorfalls muss schnell und kompetent gehandelt werden können. Zur Vermeidung
+  - Es muss für jedes System einen Verantwortlichen geben, der dieses in der Betriebsphase
+  - Es muss eine Kontaktmöglichkeit geben, über die zu den vereinbarten Zeiten sicherheitsbezogene
+  - nen Risikos abzustimmen. Es muss eine adäquate Autorisierung sowie eine angemessene Dokumentation der Ände-
+  - on muss hinsichtlich der Änderungen angepasst werden.
+
+### Web Services
+- Datei: `14_Web_Services/3_02_Web_Services_v9.1.pdf`
+- Kurzfassung: Dieses Dokument wurde auf Basis der Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien erstellt und rich- tet sich an alle Systeme, die interoperable Interaktionen von Applikation zu Applikation über ein Netzwerk unterstüt- zen. Neben den Konzernvorgaben werden ebenfalls die Empfehlungen des Open Web Appliaction Security Project als In- dustriestandard inkludiert. URLs wurden verifiziert (Stand 12.06.2025) Copyright © 2025 by Deutsche Telekom AG.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - Software und Hardware des Systems müssen von einem Sicherheitsschwachstellen-Support
+  - Eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und auf Integrität geprüft
+
+### Web Service Gateway
+- Datei: `14_Web_Services/3_13_Web_Service_Gateway_v8.1.pdf`
+- Kurzfassung: Dieses Dokument wurde auf Basis der Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien erstellt und rich- tet sich an alle Systeme, die Gateways für Web Service Dienste bereitstellen. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten.
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Dank Camara und TM Forum haben sich die HTTP-Rest APIs als Quasi-Industriestandard etabliert, und es ist zu erwar-
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+  - (1) Bietet der Bereitstellungs-Server verschiedene Formen von Downloads an, müssen durch Verschlüsselung
+  - sftp), müssen die zugehörig präsentierten Server-Zertifikate oder Server-Keys/Fingerprints bei jedem Down-
+  - Die Integritätsprüfung soll sicherstellen, dass die erhaltene Software frei von Manipulationen und Schadsoftwa-
+  - re-Befall ist. Sofern vorhanden, müssen zur Prüfung die vom Hersteller implementierten Mechanismen verwendet wer-
+  - Abgleich von kryptografischen Hash Werten (z. B. SHA256, SHA512) der erhaltenen Software gegen Soll-
+
+### Web Service über TARDIS
+- Datei: `14_Web_Services/3_18_Web_Service_über_TARDIS_v6.1.pdf`
+- Kurzfassung: Dieses Dokument enthält nur eine Teilmenge der Anforderungen aus dem Web Service Dokument und darf deshalb ausschließlich für Web Services angewandt werden die exklusiv über das TARDIS Gateway bereitgestellt werden. Das TARDIS Gateway erfüllt die verbliebenen Anforderungen, deshalb ist eine erneute Betrachtung nicht notwendig. Dieses Dokument wurde auf Basis der Vorgaben aus den im Konzern gültigen Sicherheitsrichtlinien erstellt und
+- Wichtige Anforderungspunkte:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Ein solcher Support muss umfassen, dass der Hersteller
+  - Der Sicherheitsschwachstellen-Support muss für die gesamte Dauer bestehen, in der das betroffene Produkt im Ein-
+  - Wird ein Produkt innerhalb von Support-Phasen eingesetzt, die Einschränkungen unterliegen, muss explizit sicherge-
+  - vertraglich vereinbarter Sicherheitsschwachstellen-Support unter Umständen nicht verfügbar. Grundsätzlich muss
+  - Software und Hardware des Systems müssen von einem Sicherheitsschwachstellen-Support
+  - Werden bei einem Web Service besonders schützenswerte Daten verarbeitet, so müssen diese
+  - Ein Web Service muss vor Manipulation / Replay Attacken geschützt werden, wenn dieser über
+
+### Verwendung von SaaS Public Clouds
+- Datei: `15_Cloud/3_82_Verwendung_von_SaaS_Public_Clouds_v1.0.pdf`
+- Kurzfassung: Dieses Dokument behandelt den sicheren Einsatz von SaaS-Diensten (Software as a service) für den Konzern. Die An- forderungen in diesem Dokument sind generisch und gelten für alle SaaS-Cloudanbieter und SaaS-Anwendungsfälle. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten.
+- Wichtige Anforderungspunkte:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - hängt vom verwendeten Servicemodell ab, z. B. muss der Cloud-Anbieter bei der Verwendung von IaaS den Hypervi-
+  - (Mandant) die virtuellen Maschinen und die darin laufende Software ordnungsgemäß sichern muss.
+  - Kunden noch entsprechend konfiguriert werden müssen) und solche, die der Kunde zusätzlich zu anderen Diensten
+  - klassifizieren. Dabei muss nicht nur die Datenverfügbarkeit, sondern auch der Lebenszyklus der Daten berücksichti-
+  - Alle Nutzer, einschließlich der Betreiber einer Landing Zone und insbesondere des Applikationsbetriebs, müssen sich
+  - Bevor eine Applikation in der Cloud betrieben werden darf, muss die relevante Dokumentation der
+  - träge mit dem CSP unterzeichnet werden. Wenn ein BSI-C5-Auditbericht vorhanden ist, muss dieser ebenfalls ausge-
+
+### M365 Allgemeine Anforderungen
+- Datei: `15_Cloud/8_00_M365_Allgemeine_Anforderungen_v1.2.pdf`
+- Kurzfassung: Microsoft 365 (M365) ist die Cloud Plattform von Microsoft, welche durch das Zusammenspiel verschiedener Ser- vices es ermöglicht, Kommunikations- und Digitalisierungslösungen im Digital Workplace zu erstellen. Neben den On- line Versionen von beispielsweise Word oder Excel stehen neben verschiedenen Services für Collaboration (MS Teams, Sharepoint Online), und der eigenen Produktivität (Mail, Calendar, Notes) auch Tools für die digitale
+- Wichtige Anforderungspunkte:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - det wird, muss Modern Authentication im M365 Tenant aktiviert werden:
+  - Um eine Verwendung von schwachen Authentifizierungen, sogenannten legacy Authentication zu unterbinden, muss
+  - Um die Übernahme eines Accounts z.B. durch einen Password Leak zu verhindern, muss jeder Account, der sich über
+  - Modern Authentication muss aktiviert werden
+  - Conditional Access (CA) muss verwendet werden um die Verwendung von legacy Authentication
+  - Multi Factor Authentication (MFA) muss unter Verwendung von Conditional Access (CA) für jeden
+  - Um das Verwenden schwacher oder leaked Passwörter zu unterbinden muss die Password Protection für Active Di-
+
+### M365 Power BI
+- Datei: `15_Cloud/8_01_M365_Power_BI_v4.0.pdf`
+- Kurzfassung: Power BI ist eine Sammlung von Softwarediensten, Apps und Data Connectors, die zusammenwirken, um nicht ver- bundene Datenquellen in kohärente, visuell überzeugende und interaktive Einblicke umzuwandeln. Die Daten kön- nen als Excel-Kalkulationstabelle oder als eine hybride Sammlung von cloudbasierten und lokalen Data Warehouse- Instanzen vorliegen. Mit Power BI ist es möglich, Verbindungen zwischen Ihren Datenquellen herstellen, wichtige
+- Wichtige Anforderungspunkte:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - Es muss sichergestellt werden, dass auf einen Arbeitsbereich, der Power BI Dataflows enthält, nur Berichts-Entwickler
+  - Es müssen, für Power BI Dataflows und Berichte getrennte Arbeitsbereiche genutzt werden.
+  - Dataflow-Besitzer dies erfährt. Dies soll mit dieser Anforderung verhindert werden.
+  - Es muss ebenfalls in der Systembeschreibung dokumentiert werden, dass diese Funktionalität nicht verwendet wer-
+  - worden ist, soll durch diese Anforderung die Verarbeitung / Manipulation von DTAG Information durch 3rd Party Ser-
+  - Die Power BI Dataflow Funktion "AutoML" (Automatisiertes Machine Learning) darf nicht
+  - Das Recht der Registrierung eines Data Gateways im gewünschten Tenant muss auf wenige Mitarbeiter begrenzt sein.
+
+### M365 Power Apps
+- Datei: `15_Cloud/8_02_M365_Power_Apps_v1.2.pdf`
+- Kurzfassung: Power Apps ist eine Suite von Apps, Diensten und Konnektoren sowie eine Datenplattform, die eine Umgebung für die schnelle Entwicklungsumgebung bereitstellt, in der benutzerdefinierte Apps für Geschäftsanforderungen erstellt werden können. Durch die Nutzung von Power Apps können schnell benutzerdefinierte Geschäftsanwendungen er- stellt werden, die eine Verbindung zu verschiedenen Online und OnPrem-Datenquellen herstellen, wie
+- Wichtige Anforderungspunkte:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - Vor der Verwendung der non-blockable Data Connectors müssen diese im Rahmen eines PSA Verfahrens beschrie-
+  - angebunden, so muss eine Authentication am externen System durchgeführt werden.
+  - Interne Systeme der Organisation müssen vor einer Anbindung durch einen Data Connector im Rahmen eines PSA
+  - Non-blockable Data Connectors müssen durch einen Approval Prozess abgenommen werden
+  - Im Rahmen des Betriebs der Power Apps müssen Audit Logs und die Anomalie Erkennung aktiviert und an das SIEM
+  - Audit Logs & Anomalie Erkennung müssen aktiviert werden
+
+### M365 Power Automate
+- Datei: `15_Cloud/8_03_M365_Power_Automate_v2.2.pdf`
+- Kurzfassung: Power Automate ist ein Dienst, mit dem automatisierte Workflows zwischen Apps und Diensten erstellt werden kön- nen, um z. B. Dateien zu synchronisieren, Benachrichtigungen zu erhalten und/oder Daten zu sammeln. Copyright © 2023 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten.
+- Wichtige Anforderungspunkte:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - Vor der Verwendung der blockable Data Connectors müssen diese im Rahmen eines PSA Verfahrens beschrieben
+  - muss eine Authentication am externen System durchgeführt werden.
+  - Interne Systeme der Organisation müssen vor einer Anbindung durch einen Data Connector im Rahmen eines PSA
+  - Blockable Data Connectors müssen durch einen Approval Prozess abgenommen werden
+  - Im Rahmen des Betriebs der Power Apps müssen Audit Logs und die Anomalie Erkennung aktiviert und an das SIEM
+  - Audit Logs & Anomalie Erkennung müssen aktiviert werden
+  - muss eine CA Policy erstellt und aktiviert werden die nur berechtigten Rollen und/oder Accounts Zugriff auf den Com-
+
+### M365 Sharepoint Online
+- Datei: `15_Cloud/8_04_M365_Sharepoint_Online_v1.2.pdf`
+- Kurzfassung: SharePoint ist ein Website-basiertes System zur Zusammenarbeit, das Workflow-Anwendungen, Listen-Datenbanken und andere Webparts und Sicherheitsfunktionen nutzt, um die Zusammenarbeit von Geschäftsteams zu ermöglichen. SharePoint gestattet dem Unternehmen, das die Plattform einsetzt, außerdem die Kontrolle des Zugriffs auf Informa- tionen und die geschäftseinheitsübergreifende Automatisierung von Workflow-Prozessen. Die Microsoft Cloud-Version von SharePoint, SharePoint Online, verfügt über zahl
+- Wichtige Anforderungspunkte:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - Tenant-Level ist müssen die Security Controls auf Site-Collection Level implementiert werden.
+  - Erfolgt der Zugriff auf SPO von nicht-gemanagten Devices, so müssen die Zugriffe restriktiver gestaltet werden. Aus
+  - diesem Grund muss für den Zugriff auf SPO von nicht-gemanagten Devices eine Conditional Access (CA) Policy ab-
+  - Für den Zugriff auf SPO müssen die folgenden Session Timeouts konfiguriert werden:
+  - Die Security Controls für den restriktiven Zugriff müssen auf Site-Collection Level implementiert
+  - Für den Zugriff auf SPO von nicht-gemanagten Devices muss eine Conditional Access (CA) Policy
+  - Session Timeouts müssen implementiert werden
+
+### M365 Dynamics
+- Datei: `15_Cloud/8_05_M365_Dynamics_v1.2.pdf`
+- Kurzfassung: M365 Dynamics ist eine Suite verschiedener CRM und ERP Anwendungen, die dabei unterstützt, eine Organisation zu verwalten und durch KI-gestützte Insights bessere Ergebnisse zu erzielen. Copyright © 2023 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten. 1.
+- Wichtige Anforderungspunkte:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - Änderungen an den durch den Plattformbetrieb vorgegebenen Security Roles müssen explizit an geeigneter Stelle im
+  - Die Architektur bzw. das Environment, welches M365 Dynamics verwendet, muss explizit an geeigneter Stelle im
+  - Die Konfiguration aller verwendeten MS Dynamics Apps ("Module") muss explizit an geeigneter Stelle im SDSK doku-
+  - Änderungen der Security Roles müssen dokumentiert werden
+  - Das jeweilige Environment der Applikation muss dokumentiert werden
+  - Die Konfiguration der verwendeten MS Dynamic Apps ("Module") muss dokumentiert werden
+  - Wenn in der Fachapplikation eine Teams Integration erforderlich ist, so muss diese explizit an geeigneter Stelle im
+
+### M365 Dataverse
+- Datei: `15_Cloud/8_06_M365_Dataverse_v2.2.pdf`
+- Kurzfassung: M365 Dataverse ermöglicht die Integration von Daten aus verschiedenen Quellen in einen einzigen Speicher, der dann in unterschiedlichen Services wie M365 Power Apps, M365 Power Automate, M365 Power BI oder M365 Dyna- mics verwendet werden kann. Copyright © 2023 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergabe (einschließlich Mikrokopie) sowie der Auswertung durch Datenbanken oder ähnliche Einrichtungen, vorbehalten.
+- Wichtige Anforderungspunkte:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - Es dürfen nur berechtigte Personen bzw. Applikationen auf das Dataverse zugreifen. Aus diesem Grund muss eine CA
+  - Für den Zugriff auf das Dataverse muss eine Conditional Access (CA) Policy implementiert werden
+  - Um den Zugriff auf die Daten kontrollieren und einschränken zu können, muss für jede einzelne Database eine ad-
+  - Es muss sichergestellt sein, dass die Forms einer Tabelle im Dataverse nicht von jedem innerhalb der Organisation er-
+  - reicht werden kann. Aus diesem Grund muss die entsprechende Option auf "Specify Security Roles" gesetzt und die
+  - müssen die folgenden Dateien als Anhänge blockiert werden:
+  - Record-level security in Dataverse muss verwendet werden
+
+### M365 Exchange Online
+- Datei: `15_Cloud/8_07_M365_Exchange_Online_v2.2.pdf`
+- Kurzfassung: Microsoft Exchange Online ist eine gehostete Messaginglösung, die E-Mails, Kalender, Kontakte und Aufgaben von PCs, dem Web und mobilen Geräten übermittelt. Es ist vollständig in Azure Active Directory integriert, sodass Admini- stratoren Gruppenrichtlinien sowie andere Verwaltungstools verwenden können, um Exchange Online Features in ih- rer gesamten Umgebung zu verwalten. Copyright © 2025 by Deutsche Telekom AG. Alle Rechte, auch die des auszugsweisen Nachdrucks, der fotomechanischen Wiedergab
+- Wichtige Anforderungspunkte:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - Um einen sicheren, verschlüsselten Email-Verkehr via S/MIME zu ermöglichen, muss eine sichere PKI Infrastruktur be-
+  - Um einen sicheren, verschlüsselten Email-Verkehr via S/MIME zu ermöglichen, muss eine sichere
+  - Um zu verhindern, dass Malware über Attachments in Emails verteilt wird, muss der Common Attachment Filter akti-
+  - Um (übernommene) Accounts, die Spam Emails versenden, zu identifizieren und zu blockieren, müssen die Exchange
+  - Der Common Attachment Types Filter muss verwendet werden
+  - Exchange Online Spam Policies müssen verwendet werden
+  - Um gefälschte Emails, die aussehen, als ob sie von der eigenen Organisation kommen, zu verhindern, muss DKIM ver-
+
+## Ordnerweise Anforderungs-Zusammenfassung
+
+Hinweis: Punkte sind aus den extrahierten Muss-/Soll-Aussagen verdichtet.
+
+### 01_Allgemeine_Anforderungen
+- Umfang: 7 PDFs
+- Hauptanforderungen:
+  - Cloud Governance
+  - Secure Development/Tests
+  - Patch-/Lifecycle-Management
+  - Authentisierung/IAM
+  - Verschlüsselung/Krypto
+- Beispielhafte Anforderungen:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - Ein solcher Support muss umfassen, dass der Hersteller
+
+### 02_Architektur
+- Umfang: 3 PDFs
+- Hauptanforderungen:
+  - Cloud Governance
+- Beispielhafte Anforderungen:
+  - setzungsempfehlung in Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - bzgl. Vertraulichkeit, Verfügbarkeit, Integrität oder Datenschutz, sogenannte "Kritische Systeme", müssen von anderen
+
+### 03_Betriebssysteme
+- Umfang: 5 PDFs
+- Hauptanforderungen:
+  - Verschlüsselung/Krypto
+  - Patch-/Lifecycle-Management
+  - Logging/Audit
+  - Systemhärtung/Konfiguration
+- Beispielhafte Anforderungen:
+  - am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits während der Planungs- und Entscheidungspro-
+  - SSHv1 muss permanent in der Konfiguration des SSH-Servers deaktiviert werden. Mit OpenSSH 7.4 wurde die Unter-
+
+### 04_Virtualisierung
+- Umfang: 5 PDFs
+- Hauptanforderungen:
+  - Cloud Governance
+  - Patch-/Lifecycle-Management
+- Beispielhafte Anforderungen:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Der PatchmanagementProzess in einer Cloud-Umgebung muss so implementiert werden, dass das Patchen aller
+
+### 05_Datenbanken
+- Umfang: 6 PDFs
+- Hauptanforderungen:
+  - Patch-/Lifecycle-Management
+  - Authentisierung/IAM
+- Beispielhafte Anforderungen:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+
+### 06_Server_Applikationen
+- Umfang: 2 PDFs
+- Hauptanforderungen: Keine klaren Keyword-Schwerpunkte automatisch erkannt.
+- Beispielhafte Anforderungen:
+  - gen müssen erfüllt werden, um sicherzustellen, dass eine Web-Anwendung nicht ohne Weiteres von Angreifern
+  - aus als Umsetzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen
+
+### 07_Applikationsserver
+- Umfang: 2 PDFs
+- Hauptanforderungen:
+  - Patch-/Lifecycle-Management
+- Beispielhafte Anforderungen:
+  - rungen müssen erfüllt werden, um sicherzustellen, dass ein Application Server nicht ohne weiteres von Angreifern
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+
+### 08_Webserver
+- Umfang: 5 PDFs
+- Hauptanforderungen:
+  - Patch-/Lifecycle-Management
+- Beispielhafte Anforderungen:
+  - derungen an eine sichere Implementierung von Webservern. Die hier beschriebenen Anforderungen müssen erfüllt
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+
+### 09_Endgeraete
+- Umfang: 5 PDFs
+- Hauptanforderungen:
+  - Verschlüsselung/Krypto
+  - Netzwerkhärtung/Segmentierung
+- Beispielhafte Anforderungen:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Dieses Anforderungspapier bietet die Grundlage welche Mindestanforderungen an einen Client erfüllt sein müssen,
+
+### 10_Netzwerkkomponenten
+- Umfang: 7 PDFs
+- Hauptanforderungen:
+  - Netzwerkhärtung/Segmentierung
+  - Logging/Audit
+  - Systemhärtung/Konfiguration
+- Beispielhafte Anforderungen:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - nen Einsatzumfeld nicht erforderlich sind.
+
+### 11_Fremdfirmenzugang
+- Umfang: 2 PDFs
+- Hauptanforderungen:
+  - Netzwerkhärtung/Segmentierung
+- Beispielhafte Anforderungen:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Der Identitätsmanagementprozess muss eingeführt und nachvollziehbar dokumentiert sein. Informationen über die-
+
+### 12_Mobile_Applikationen
+- Umfang: 2 PDFs
+- Hauptanforderungen: Keine klaren Keyword-Schwerpunkte automatisch erkannt.
+- Beispielhafte Anforderungen:
+  - zungsempfehlung in Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Die auf dem System eingesetzte Software muss aus vertrauenswürdigen Quellen bezogen und vor der Installation auf
+
+### 13_Betriebliche_Sicherheitsanforderungen
+- Umfang: 2 PDFs
+- Hauptanforderungen:
+  - Cloud Governance
+- Beispielhafte Anforderungen:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - gen Landesgesellschaft sein. Der Ansprechpartner muss für technische/nicht technische Aspekte zur Verfügung ste-
+
+### 14_Web_Services
+- Umfang: 3 PDFs
+- Hauptanforderungen:
+  - Patch-/Lifecycle-Management
+- Beispielhafte Anforderungen:
+  - zungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits wäh-
+  - Ein solcher Support muss umfassen, dass der Hersteller
+
+### 15_Cloud
+- Umfang: 9 PDFs
+- Hauptanforderungen:
+  - Cloud Governance
+  - Logging/Audit
+  - Systemhärtung/Konfiguration
+  - Authentisierung/IAM
+- Beispielhafte Anforderungen:
+  - setzungsempfehlung für Einheiten, die nicht am PSA-Verfahren teilnehmen. Diese Anforderungen müssen bereits
+  - hängt vom verwendeten Servicemodell ab, z. B. muss der Cloud-Anbieter bei der Verwendung von IaaS den Hypervi-
+

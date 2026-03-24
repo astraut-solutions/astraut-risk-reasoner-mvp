@@ -79,6 +79,15 @@ astraut-risk demo
 - `astraut-risk inspect "..."`: Deterministic analysis only (signals, weights, control gaps).
 - `astraut-risk controls`: Show enabled CIS/NIST/OWASP framework mappings.
 - `astraut-risk controls cis|nist|owasp`: Show mappings filtered to one framework.
+- `astraut-risk control-delta <old_index.json> <new_index.json> --output delta.json`: Compare versioned requirement controls.
+- `astraut-risk policy-check "..."`: Run policy-as-code checks.
+- `astraut-risk policy-check "..." --policy-pack docs/policy_pack.example.yaml`: Run external YAML policy pack checks.
+- `astraut-risk policy-check "..." --policy-pack docs/policy_pack.example.yaml --no-default-policies`: Run only custom pack rules.
+- `astraut-risk policy-check "..." --questionnaire-file questionnaire.json --hook-output assessments/policy_hook.json`: Evaluate with explicit questionnaire context and export hook payload.
+- `astraut-risk governance-submit <assessment_cache.json> --requested-by <user> --approver <a> --approver <b>`: Start approval trail.
+- `astraut-risk governance-approve <trail_id> --actor <user> --decision approve|reject`: Record approval/rejection.
+- `astraut-risk governance-list`: List governance trails.
+- `astraut-risk governance-list --status pending|approved|rejected`: Filter trails by workflow state.
 - `astraut-risk checklist`: Show practical SME baseline checklist.
 - `astraut-risk matrix`: Show cybersecurity investment matrix.
 - `astraut-risk explain <topic>`: Explain a cybersecurity concept (e.g., `mfa`).
@@ -109,6 +118,11 @@ astraut-risk controls
 astraut-risk controls cis
 astraut-risk controls nist
 astraut-risk controls owasp
+astraut-risk control-delta assessments/requirements_prev.json assessments/requirements_curr.json --output assessments/control_delta.json
+astraut-risk policy-check "12-person SaaS on AWS with public API and no MFA"
+astraut-risk policy-check "12-person SaaS on AWS with public API and no MFA" --policy-pack docs/policy_pack.example.yaml
+astraut-risk policy-check "12-person SaaS on AWS with public API and no MFA" --policy-pack docs/policy_pack.example.yaml --no-default-policies
+astraut-risk policy-check "12-person SaaS on AWS with public API and no MFA" --policy-pack docs/policy_pack.example.yaml --questionnaire-file questionnaire.json --hook-output assessments/policy_hook.json
 astraut-risk scenario list
 astraut-risk scenario run saas_startup
 ```
