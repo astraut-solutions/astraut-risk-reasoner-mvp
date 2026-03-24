@@ -30,6 +30,7 @@ from astraut_risk.config import (
 )
 from astraut_risk.matrix import MATRIX_ROWS
 from astraut_risk.questionnaire import (
+    default_questionnaire,
     infer_questionnaire_from_text,
     merge_questionnaire,
     normalize_questionnaire_mode,
@@ -828,27 +829,32 @@ def _normalize_none_answers(questionnaire: dict[str, dict[str, str]]) -> dict[st
 
 def _worst_case_questionnaire_context() -> dict[str, dict[str, str]]:
     """Temporary helper for stress-testing report generation with high-risk defaults."""
-    return {
-        "business": {
+    questionnaire = default_questionnaire()
+    questionnaire["business"].update(
+        {
+            "industry": "other",
             "company_size": "enterprise",
             "data_sensitivity": "high",
-        },
-        "compliance": {
-            "regulatory_profile": "regulated",
-        },
-        "technical_architecture": {
+        }
+    )
+    questionnaire["compliance"].update({"regulatory_profile": "regulated"})
+    questionnaire["technical_architecture"].update(
+        {
             "internet_exposed": "yes",
             "public_api": "yes",
             "mfa_enforced": "no",
             "network_segmentation": "no",
             "logging_monitoring": "no",
             "backup_restore_tested": "no",
-        },
-        "maturity": {
+        }
+    )
+    questionnaire["maturity"].update(
+        {
             "incident_response_plan": "no",
             "identity_maturity": "basic",
-        },
-    }
+        }
+    )
+    return questionnaire
 
 
 st.set_page_config(page_title="Astraut Risk Reasoner", layout="wide")
@@ -927,6 +933,15 @@ with risk_tab:
 
     templates = questionnaire_templates()
     template_answers: dict[str, str | list[str]] = {}
+    detailed_multi_select_headings = {
+        "Architecture",
+        "Cloud & IAM",
+        "Data Security",
+        "Infrastructure",
+        "Application Security",
+        "Operations",
+        "Compliance",
+    }
     st.markdown("### Mode Questions")
     for idx, item in enumerate(templates[selected_mode]):
         heading = str(item["heading"])
@@ -934,9 +949,11 @@ with risk_tab:
         options = [str(option) for option in item.get("options", [])]
         widget_label = f"**{heading}**  \n{question}"
         widget_key = f"questionnaire_{selected_mode}_{idx}"
-        if selected_mode in {"medium", "detailed"} and (
-            selected_mode == "detailed" or heading == "Architecture"
-        ):
+        use_multiselect = (
+            (selected_mode == "medium" and heading == "Architecture")
+            or (selected_mode == "detailed" and heading in detailed_multi_select_headings)
+        )
+        if use_multiselect:
             template_answers[heading] = st.multiselect(
                 widget_label,
                 options,

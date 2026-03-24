@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from .control_map import CONTROL_MAP
 from .models import RiskAssessment
 
 _METHOD_SECTION = (
@@ -24,6 +25,47 @@ _REQUIRED_REPORT_SECTIONS = (
 )
 
 _STANDARD_OUTPUT_ORDER = ("CIS", "NIST", "OWASP")
+
+
+def _severity_from_signal_weight(weight: int) -> str:
+    if weight >= 14:
+        return "high"
+    if weight >= 10:
+        return "medium"
+    return "low"
+
+
+def _associated_risks_for_category(category: str) -> str:
+    normalized = category.lower()
+    if "identity" in normalized:
+        return "account takeover, privilege abuse, unauthorized data access"
+    if "infrastructure" in normalized or "cloud" in normalized:
+        return "external exploitation, lateral movement, service disruption"
+    if "backup" in normalized or "resilience" in normalized:
+        return "ransomware recovery failure, prolonged outage, data loss"
+    if "monitoring" in normalized or "detection" in normalized:
+        return "late breach detection, forensic blind spots, delayed containment"
+    if "supply chain" in normalized or "software" in normalized:
+        return "known CVE exploitation, malicious dependency risk, release compromise"
+    return "control failure amplification, compliance exposure, business interruption"
+
+
+def _worst_case_projection(assessment: RiskAssessment) -> int:
+    signal_weight_total = sum(signal.weight for signal in assessment.matched_signals)
+    no_control_flags = (
+        1
+        for value in (
+            assessment.questionnaire.get("technical_architecture", {}).get("mfa_enforced", "unknown"),
+            assessment.questionnaire.get("technical_architecture", {}).get("network_segmentation", "unknown"),
+            assessment.questionnaire.get("technical_architecture", {}).get("logging_monitoring", "unknown"),
+            assessment.questionnaire.get("technical_architecture", {}).get("backup_restore_tested", "unknown"),
+            assessment.questionnaire.get("maturity", {}).get("incident_response_plan", "unknown"),
+        )
+        if value == "no"
+    )
+    no_controls = sum(no_control_flags)
+    uplift = min(35, int(round(signal_weight_total * 0.18)) + (no_controls * 2))
+    return min(100, assessment.overall_score + uplift)
 
 
 def extract_markdown_sections(content: str) -> dict[str, str]:
@@ -174,22 +216,44 @@ def build_required_report_sections(assessment: RiskAssessment) -> dict[str, list
     )
 
     identified_risks_lines: list[str] = []
-    if assessment.identified_requirement_risks:
-        for idx, risk in enumerate(assessment.identified_requirement_risks, start=1):
+    if assessment.matched_signals:
+        for idx, signal in enumerate(assessment.matched_signals, start=1):
+            mapping = CONTROL_MAP.get(signal.signal_id, {})
+            category = mapping.get("category", signal.category)
+            mitigation = mapping.get("recommendation", "Define targeted mitigation and control owner.")
+            first_action = mapping.get("first_action", "Capture immediate containment action.")
+            severity = _severity_from_signal_weight(signal.weight)
             identified_risks_lines.extend(
                 [
                     (
-                        f"{idx}. {risk.risk} "
+                        f"{idx}. Vulnerability: {signal.label} "
+                        f"(severity: {severity}, category: {signal.category}, signal weight: +{signal.weight})"
+                    ),
+                    f"   - Risk details: {signal.why_it_matters}",
+                    f"   - Associated risks: {_associated_risks_for_category(signal.category)}",
+                    f"   - Missing / weak controls: {category} controls lack sufficient evidence.",
+                    f"   - Mitigation recommendation: {mitigation}",
+                    f"   - Immediate action: {first_action}",
+                ]
+            )
+    if assessment.identified_requirement_risks:
+        start_idx = len(assessment.matched_signals) + 1
+        for idx, risk in enumerate(assessment.identified_requirement_risks, start=start_idx):
+            identified_risks_lines.extend(
+                [
+                    (
+                        f"{idx}. Requirement-linked risk: {risk.risk} "
                         f"({risk.severity}, impact: {risk.impact}, score: {risk.score:.2f})"
                     ),
                     f"   - Why this risk exists: {risk.why}",
+                    "   - Missing / weak controls: requirement control evidence indicates a gap.",
                     f"   - Source document: {risk.source_document}",
                     f"   - Reference control: {risk.reference_control}",
                 ]
             )
-    else:
+    if not identified_risks_lines:
         identified_risks_lines = [
-            "- No requirement-linked risks identified (requirements calibration is optional)."
+            "- No vulnerabilities were matched from current evidence; collect more architecture and control data."
         ]
 
     recommendation_lines: list[str] = []
@@ -432,6 +496,7 @@ def compose_assessment_markdown(
         f"- Inherent Risk: {assessment.inherent_risk}/100",
         f"- Control Reduction: {assessment.control_reduction:.2f} ({int(round(assessment.control_reduction * 100))}%)",
         f"- Residual Risk: {assessment.residual_risk}/100",
+        f"- Cascading Worst-Case Projection: {_worst_case_projection(assessment)}/100",
         f"- Confidence: {assessment.confidence:.2f} ({int(round(assessment.confidence * 100))}%)",
         "",
         "## Top 3 Risks",

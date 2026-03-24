@@ -33,3 +33,14 @@ def test_compose_assessment_markdown_includes_separate_standard_outputs() -> Non
     assert "## NIST Output" in markdown
     assert "## OWASP Output" in markdown
     assert "## Detailed Risk Register (Full)" in markdown
+
+
+def test_compose_assessment_markdown_includes_vulnerability_control_mitigation_details() -> None:
+    assessment = assess_company_risk(
+        "SaaS with public API, no MFA, no segmentation, no logging, and no tested backups"
+    )
+    markdown = compose_assessment_markdown(assessment)
+    assert "Vulnerability:" in markdown
+    assert "Missing / weak controls:" in markdown
+    assert "Mitigation recommendation:" in markdown
+    assert "Cascading Worst-Case Projection:" in markdown

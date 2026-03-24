@@ -4,6 +4,7 @@ from astraut_risk.questionnaire import (
     merge_questionnaire,
     normalize_questionnaire_mode,
     questionnaire_override_from_template_answers,
+    questionnaire_templates,
 )
 
 
@@ -91,6 +92,7 @@ def test_questionnaire_override_from_detailed_answers_maps_controls() -> None:
     override = questionnaire_override_from_template_answers(
         "detailed",
         {
+            "Architecture": ["Web app", "API", "Database"],
             "Cloud & IAM": ["MFA", "Least privilege/RBAC"],
             "Infrastructure": ["Segmented network"],
             "Application Security": ["API gateway controls"],
@@ -125,5 +127,42 @@ def test_questionnaire_none_option_maps_as_explicit_feedback() -> None:
     assert override["technical_architecture"]["public_api"] == "unknown"
     assert override["technical_architecture"]["mfa_enforced"] == "no"
     assert override["technical_architecture"]["network_segmentation"] == "no"
+    assert override["technical_architecture"]["logging_monitoring"] == "no"
+    assert override["technical_architecture"]["backup_restore_tested"] == "no"
+
+
+def test_detailed_mode_contains_general_and_medium_questions() -> None:
+    templates = questionnaire_templates()
+    detailed_headings = {item["heading"] for item in templates["detailed"]}
+    assert "Business Profile" in detailed_headings
+    assert "Core Exposure" in detailed_headings
+    assert "Critical Data" in detailed_headings
+    assert "Access Security" in detailed_headings
+    assert "Network Security" in detailed_headings
+    assert "Detection" in detailed_headings
+    assert "Resilience" in detailed_headings
+
+
+def test_questionnaire_override_from_detailed_answers_maps_lower_tier_inputs() -> None:
+    override = questionnaire_override_from_template_answers(
+        "detailed",
+        {
+            "Business Profile": "Cloud/SaaS",
+            "Core Exposure": "Yes",
+            "Critical Data": "Yes",
+            "Architecture": ["Web app", "API"],
+            "Access Security": "Not enforced",
+            "Network Security": "Partially",
+            "Detection": "Not implemented",
+            "Resilience": "Never",
+            "Cloud & IAM": ["None"],
+        },
+    )
+    assert override["technical_architecture"]["internet_exposed"] == "yes"
+    assert override["technical_architecture"]["public_api"] == "yes"
+    assert override["business"]["data_sensitivity"] == "high"
+    assert override["compliance"]["regulatory_profile"] == "regulated"
+    assert override["technical_architecture"]["mfa_enforced"] == "no"
+    assert override["technical_architecture"]["network_segmentation"] == "unknown"
     assert override["technical_architecture"]["logging_monitoring"] == "no"
     assert override["technical_architecture"]["backup_restore_tested"] == "no"
