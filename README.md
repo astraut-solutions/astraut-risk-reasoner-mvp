@@ -1,4 +1,4 @@
-# Astraut Risk Reasoner
+# Astraut Risk Reasoner MVP
 
 Turn a short description of a company into a cybersecurity risk assessment.
 
