@@ -1,0 +1,30 @@
+name: enterprise-policy-pack
+version: 1
+rules:
+  - id: ENT-001
+    title: Residual Risk Threshold
+    severity: high
+    rationale_pass: Residual risk is inside approved threshold.
+    rationale_fail: Residual risk exceeds approved threshold.
+    conditions:
+      - path: assessment.residual_risk
+        op: lte
+        value: 55
+
+  - id: ENT-002
+    title: MFA Baseline Evidence
+    severity: high
+    rationale_pass: MFA enforcement is explicitly confirmed.
+    rationale_fail: MFA enforcement missing or unknown.
+    conditions:
+      - path: questionnaire.technical_architecture.mfa_enforced
+        op: equals
+        value: "yes"
+
+  - id: ENT-003
+    title: Public API Requires Monitoring Signal
+    severity: medium
+    conditions:
+      - path: signals
+        op: contains
+        value: public_api

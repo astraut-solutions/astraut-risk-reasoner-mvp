@@ -179,3 +179,271 @@ def to_signal_hints(questionnaire: dict[str, dict[str, str]]) -> str:
     if tech.get("internet_exposed") == "yes":
         hints.append("internet facing")
     return " ".join(hints)
+
+
+def questionnaire_templates() -> dict[str, list[dict[str, object]]]:
+    """Return three questionnaire depth options for user input collection."""
+    return {
+        "general": [
+            {
+                "heading": "Business Profile",
+                "question": "What best describes your environment?",
+                "options": ["Cloud/SaaS", "On-prem", "Hybrid", "None"],
+            },
+            {
+                "heading": "Core Exposure",
+                "question": "Do you run internet-facing systems?",
+                "options": ["Yes", "No", "Not sure", "None"],
+            },
+            {
+                "heading": "Critical Data",
+                "question": "Do you process sensitive data (PII/financial/health)?",
+                "options": ["Yes", "No", "Not sure", "None"],
+            },
+        ],
+        "medium": [
+            {
+                "heading": "Architecture",
+                "question": "Which components are in use?",
+                "options": ["Web app", "API", "Database", "Cloud services", "Mobile app", "None"],
+            },
+            {
+                "heading": "Access Security",
+                "question": "How are privileged accounts protected?",
+                "options": ["MFA enforced", "Partially enforced", "Not enforced", "None"],
+            },
+            {
+                "heading": "Network Security",
+                "question": "Is network segmentation implemented?",
+                "options": ["Yes", "No", "Partially", "None"],
+            },
+            {
+                "heading": "Detection",
+                "question": "How mature are logging and alerting controls?",
+                "options": ["Centralized + alerting", "Basic logs only", "Not implemented", "None"],
+            },
+            {
+                "heading": "Resilience",
+                "question": "Are backup restore tests performed?",
+                "options": ["Regularly", "Occasionally", "Never", "None"],
+            },
+        ],
+        "detailed": [
+            {
+                "heading": "Cloud & IAM",
+                "question": "Select all identity controls implemented.",
+                "options": ["MFA", "SSO", "Least privilege/RBAC", "Privileged session control", "None"],
+            },
+            {
+                "heading": "Data Security",
+                "question": "Select data protection controls in place.",
+                "options": ["Encryption at rest", "Encryption in transit", "Key rotation", "DLP", "None"],
+            },
+            {
+                "heading": "Infrastructure",
+                "question": "Select infrastructure hardening coverage.",
+                "options": ["Segmented network", "Hardened images", "Vulnerability scanning", "Patch SLA", "None"],
+            },
+            {
+                "heading": "Application Security",
+                "question": "Select application security practices.",
+                "options": ["SAST/DAST", "Dependency scanning", "Secrets scanning", "API gateway controls", "None"],
+            },
+            {
+                "heading": "Operations",
+                "question": "Select operational security maturity controls.",
+                "options": ["IR playbooks", "Tabletop testing", "Centralized SIEM", "24x7 monitoring", "None"],
+            },
+            {
+                "heading": "Compliance",
+                "question": "Select applicable compliance regimes.",
+                "options": ["ISO 27001", "NIST", "OWASP", "Internal policy only", "None"],
+            },
+        ],
+    }
+
+
+def normalize_questionnaire_mode(mode: str) -> str:
+    """Normalize user-facing questionnaire mode labels to internal keys."""
+    normalized = (mode or "").strip().lower().replace("-", " ").replace("_", " ")
+    normalized = re.sub(r"\s+", " ", normalized)
+    aliases = {
+        "general": "general",
+        "minimal": "general",
+        "medium": "medium",
+        "detailed": "detailed",
+        "full detailed": "detailed",
+        "full": "detailed",
+    }
+    return aliases.get(normalized, "medium")
+
+
+def questionnaire_override_from_template_answers(
+    mode: str, answers: dict[str, str | list[str]]
+) -> dict[str, dict[str, str]]:
+    """Map template answers into deterministic questionnaire override fields."""
+    normalized_mode = normalize_questionnaire_mode(mode)
+    lowered_answers: dict[str, str | list[str]] = {
+        key.strip().lower(): value for key, value in answers.items()
+    }
+    override: dict[str, dict[str, str]] = {}
+
+    def put(domain: str, field: str, value: str) -> None:
+        override.setdefault(domain, {})[field] = value
+
+    if normalized_mode == "general":
+        profile = str(lowered_answers.get("business profile", "")).strip().lower()
+        if profile in {"cloud/saas", "hybrid"}:
+            put("technical_architecture", "internet_exposed", "yes")
+        elif profile == "on-prem":
+            put("technical_architecture", "internet_exposed", "no")
+        elif profile == "none":
+            put("technical_architecture", "internet_exposed", "unknown")
+
+        exposure = str(lowered_answers.get("core exposure", "")).strip().lower()
+        exposure_map = {"yes": "yes", "no": "no", "not sure": "unknown", "none": "unknown"}
+        if exposure in exposure_map:
+            mapped = exposure_map[exposure]
+            put("technical_architecture", "internet_exposed", mapped)
+            put("technical_architecture", "public_api", mapped)
+
+        critical = str(lowered_answers.get("critical data", "")).strip().lower()
+        if critical == "yes":
+            put("business", "data_sensitivity", "high")
+            put("compliance", "regulatory_profile", "regulated")
+        elif critical == "no":
+            put("business", "data_sensitivity", "low")
+            put("compliance", "regulatory_profile", "unregulated")
+        elif critical == "not sure":
+            put("business", "data_sensitivity", "unknown")
+        elif critical == "none":
+            put("business", "data_sensitivity", "unknown")
+            put("compliance", "regulatory_profile", "unknown")
+
+        return override
+
+    if normalized_mode == "medium":
+        components_raw = lowered_answers.get("architecture", [])
+        components = (
+            {item.strip().lower() for item in components_raw if isinstance(item, str)}
+            if isinstance(components_raw, list)
+            else set()
+        )
+        if "none" in components:
+            put("technical_architecture", "public_api", "unknown")
+            put("technical_architecture", "internet_exposed", "unknown")
+        elif components:
+            public = "yes" if "api" in components else "no"
+            internet_exposed = (
+                "yes"
+                if components.intersection({"web app", "api", "mobile app"})
+                else "no"
+            )
+            put("technical_architecture", "public_api", public)
+            put("technical_architecture", "internet_exposed", internet_exposed)
+
+        access = str(lowered_answers.get("access security", "")).strip().lower()
+        access_map = {
+            "mfa enforced": "yes",
+            "partially enforced": "unknown",
+            "not enforced": "no",
+            "none": "no",
+        }
+        if access in access_map:
+            put("technical_architecture", "mfa_enforced", access_map[access])
+
+        network = str(lowered_answers.get("network security", "")).strip().lower()
+        network_map = {"yes": "yes", "no": "no", "partially": "unknown", "none": "no"}
+        if network in network_map:
+            put("technical_architecture", "network_segmentation", network_map[network])
+
+        detection = str(lowered_answers.get("detection", "")).strip().lower()
+        detection_map = {
+            "centralized + alerting": "yes",
+            "basic logs only": "unknown",
+            "not implemented": "no",
+            "none": "no",
+        }
+        if detection in detection_map:
+            put("technical_architecture", "logging_monitoring", detection_map[detection])
+
+        resilience = str(lowered_answers.get("resilience", "")).strip().lower()
+        resilience_map = {"regularly": "yes", "occasionally": "unknown", "never": "no", "none": "no"}
+        if resilience in resilience_map:
+            put("technical_architecture", "backup_restore_tested", resilience_map[resilience])
+
+        return override
+
+    iam = lowered_answers.get("cloud & iam", [])
+    iam_controls = (
+        {item.strip().lower() for item in iam if isinstance(item, str)}
+        if isinstance(iam, list)
+        else set()
+    )
+    if "mfa" in iam_controls:
+        put("technical_architecture", "mfa_enforced", "yes")
+    if "none" in iam_controls:
+        put("technical_architecture", "mfa_enforced", "no")
+        put("maturity", "identity_maturity", "basic")
+    elif "least privilege/rbac" in iam_controls or "privileged session control" in iam_controls:
+        put("maturity", "identity_maturity", "advanced")
+    elif iam_controls:
+        put("maturity", "identity_maturity", "basic")
+
+    infra = lowered_answers.get("infrastructure", [])
+    infra_controls = (
+        {item.strip().lower() for item in infra if isinstance(item, str)}
+        if isinstance(infra, list)
+        else set()
+    )
+    if "none" in infra_controls:
+        put("technical_architecture", "network_segmentation", "no")
+    elif "segmented network" in infra_controls:
+        put("technical_architecture", "network_segmentation", "yes")
+
+    appsec = lowered_answers.get("application security", [])
+    appsec_controls = (
+        {item.strip().lower() for item in appsec if isinstance(item, str)}
+        if isinstance(appsec, list)
+        else set()
+    )
+    if "none" in appsec_controls:
+        put("technical_architecture", "public_api", "unknown")
+        put("technical_architecture", "internet_exposed", "unknown")
+    elif "api gateway controls" in appsec_controls:
+        put("technical_architecture", "public_api", "yes")
+        put("technical_architecture", "internet_exposed", "yes")
+
+    ops = lowered_answers.get("operations", [])
+    ops_controls = (
+        {item.strip().lower() for item in ops if isinstance(item, str)}
+        if isinstance(ops, list)
+        else set()
+    )
+    if "none" in ops_controls:
+        put("technical_architecture", "logging_monitoring", "no")
+        put("maturity", "incident_response_plan", "no")
+    elif ops_controls.intersection({"centralized siem", "24x7 monitoring"}):
+        put("technical_architecture", "logging_monitoring", "yes")
+    if ops_controls.intersection({"ir playbooks", "tabletop testing"}):
+        put("maturity", "incident_response_plan", "yes")
+
+    compliance = lowered_answers.get("compliance", [])
+    compliance_controls = (
+        [item for item in compliance if isinstance(item, str)]
+        if isinstance(compliance, list)
+        else []
+    )
+    if "none" in {item.strip().lower() for item in compliance_controls}:
+        put("compliance", "regulatory_profile", "unknown")
+    elif compliance_controls:
+        put("compliance", "regulatory_profile", "regulated")
+
+    data = lowered_answers.get("data security", [])
+    data_controls = (
+        [item for item in data if isinstance(item, str)] if isinstance(data, list) else []
+    )
+    if data_controls:
+        put("business", "data_sensitivity", "medium")
+
+    return override

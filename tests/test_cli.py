@@ -114,3 +114,26 @@ def test_assess_export_json_includes_dimensions_section(monkeypatch, tmp_path) -
     assert "risk_dimensions" in sections
     assert "Likelihood" in sections["risk_dimensions"]
     assert "Residual Risk" in sections["risk_dimensions"]
+
+
+def test_assess_with_web_parity_flags_runs(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr("astraut_risk.cli._get_client", lambda: object())
+    monkeypatch.setattr(
+        "astraut_risk.cli.request_completion",
+        lambda client, messages, model, temperature=0.2: "## Risk Rationale\nok",
+    )
+
+    missing_index = tmp_path / "missing_requirements_index.json"
+    result = runner.invoke(
+        app,
+        [
+            "assess",
+            "12-person SaaS company on AWS with no MFA on admin accounts",
+            "--no-prompt-missing-questionnaire",
+            "--use-requirements-index",
+            "--requirements-index",
+            str(missing_index),
+        ],
+    )
+    assert result.exit_code == 0
+    assert "Risk Assessment Result" in result.stdout

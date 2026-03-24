@@ -41,13 +41,31 @@ from .output import (
     render_input_panel,
     render_matrix,
 )
+from .enterprise import (
+    build_integration_hook_payload,
+    create_governance_trail,
+    evaluate_policy_checks,
+    load_governance_trails,
+    policy_gate_status,
+    record_governance_decision,
+    save_governance_trails,
+    write_hook_payload,
+)
 from .questionnaire import (
     high_impact_missing_fields,
     infer_questionnaire_from_text,
     load_questionnaire_file,
     merge_questionnaire,
+    questionnaire_templates,
 )
 from .risk_engine import assess_company_risk
+from .security_requirements import (
+    compare_control_versions,
+    ingest_requirements_repository,
+    load_repository_index,
+    repository_version_snapshot,
+    save_repository_index,
+)
 from .framework_mapping import (
     list_framework_names,
     load_framework_mappings,
@@ -76,6 +94,7 @@ DEMO_INPUT = (
     "We are a 12-person SaaS startup on AWS using Gmail, Stripe, and a custom "
     "web app with public API. No MFA on admin yet."
 )
+DEFAULT_REQUIREMENTS_INDEX = "assessments/security_requirements_index.json"
 
 DEMO_ASSESSMENT = """## Overall Risk Score
 8/10 ⚠️
@@ -305,6 +324,8 @@ def _run_assessment_flow(
     refresh_cache: bool = False,
     questionnaire_file: str = "",
     prompt_missing: bool = True,
+    use_requirements_index: bool = False,
+    requirements_index: str = "",
 ) -> None:
     validate_company_description(company_description)
     validate_model(model)
@@ -314,9 +335,16 @@ def _run_assessment_flow(
         questionnaire_file=questionnaire_file,
         prompt_missing=prompt_missing,
     )
+    resolved_requirements_index = ""
+    if use_requirements_index and requirements_index.strip():
+        candidate = Path(requirements_index.strip()).expanduser()
+        if candidate.exists():
+            resolved_requirements_index = str(candidate)
+
     deterministic_assessment = assess_company_risk(
         company_description,
         questionnaire_context=questionnaire_context,
+        requirements_index=resolved_requirements_index,
     )
 
     render_input_panel(company_description)
@@ -423,9 +451,25 @@ def assess(
         help="Optional path to questionnaire JSON for structured context.",
     ),
     prompt_missing_questionnaire: bool = typer.Option(
-        True,
+        False,
         "--prompt-missing-questionnaire/--no-prompt-missing-questionnaire",
-        help="Prompt for missing high-impact questionnaire fields when running interactively.",
+        help="Prompt for missing high-impact questionnaire fields when running interactively (default: disabled to match Web behavior).",
+    ),
+    use_requirements_index: bool = typer.Option(
+        False,
+        "--use-requirements-index/--no-use-requirements-index",
+        help=(
+            "Enable optional internal requirements calibration retrieval "
+            "(default: disabled, same as Web)."
+        ),
+    ),
+    requirements_index: str = typer.Option(
+        DEFAULT_REQUIREMENTS_INDEX,
+        "--requirements-index",
+        help=(
+            "Optional internal calibration index for requirements retrieval. "
+            "Assessment still works when this is not provided."
+        ),
     ),
 ) -> None:
     """Assess risk from a company description."""
@@ -439,6 +483,8 @@ def assess(
             refresh_cache=refresh_cache,
             questionnaire_file=questionnaire_file,
             prompt_missing=prompt_missing_questionnaire,
+            use_requirements_index=use_requirements_index,
+            requirements_index=requirements_index,
         )
 
     except MissingApiKeyError as exc:
@@ -465,6 +511,334 @@ def assess(
             hint="Verify GROQ_API_KEY validity and model availability.",
         )
         raise typer.Exit(code=1)
+
+
+@app.command("questionnaire-options")
+def questionnaire_options() -> None:
+    """Show three input-depth questionnaire options (general/medium/detailed)."""
+    templates = questionnaire_templates()
+    table = Table(
+        title="Questionnaire Input Modes",
+        box=box.ROUNDED,
+        show_lines=True,
+        header_style="bold cyan",
+    )
+    table.add_column("Mode", style="bold white")
+    table.add_column("Questions", justify="right", style="yellow")
+    table.add_column("Coverage", style="green")
+    for mode in ("general", "medium", "detailed"):
+        items = templates[mode]
+        headings = ", ".join(item["heading"] for item in items[:4])
+        if len(items) > 4:
+            headings += ", ..."
+        table.add_row(mode, str(len(items)), headings)
+    console.print(table)
+
+
+@app.command("ingest-requirements")
+def ingest_requirements(
+    root: str = typer.Argument(..., help="Root path containing categorized security requirement PDFs."),
+    output: str = typer.Option(
+        "assessments/security_requirements_index.json",
+        "--output",
+        help="Output JSON index path.",
+    ),
+) -> None:
+    """Ingest security requirement PDFs as optional internal calibration tooling."""
+    repository = ingest_requirements_repository(root)
+    output_path = save_repository_index(repository, output)
+    render_info(
+        "Requirements Ingestion Complete",
+        (
+            f"Documents: {len(repository.documents)}\n"
+            f"Controls: {len(repository.controls)}\n"
+            f"Index: {output_path}"
+        ),
+    )
+
+
+@app.command("control-delta")
+def control_delta(
+    previous_index: str = typer.Argument(..., help="Path to previous requirements index JSON."),
+    current_index: str = typer.Argument(..., help="Path to current requirements index JSON."),
+    output: str = typer.Option(
+        "",
+        "--output",
+        help="Optional JSON output path for full delta payload.",
+    ),
+) -> None:
+    """Compare versioned requirement controls across index snapshots."""
+    previous = load_repository_index(previous_index)
+    current = load_repository_index(current_index)
+    delta = compare_control_versions(previous, current)
+
+    previous_snapshot = repository_version_snapshot(previous)
+    current_snapshot = repository_version_snapshot(current)
+    summary = delta.get("summary", {})
+    render_info(
+        "Control Delta Summary",
+        (
+            f"Previous fingerprint: {previous_snapshot.get('control_fingerprint', '')}\n"
+            f"Current fingerprint: {current_snapshot.get('control_fingerprint', '')}\n"
+            f"Added controls: {summary.get('added_controls', 0)}\n"
+            f"Removed controls: {summary.get('removed_controls', 0)}\n"
+            f"Version changed controls: {summary.get('version_changed_controls', 0)}"
+        ),
+    )
+
+    if output.strip():
+        path = Path(output.strip())
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(delta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        render_info("Control Delta Export", f"Saved delta payload to `{path}`.")
+
+
+@app.command("policy-check")
+def policy_check(
+    company_description: str = typer.Argument(
+        ...,
+        help="Natural-language description for deterministic policy gate evaluation.",
+    ),
+    questionnaire_file: str = typer.Option(
+        "",
+        "--questionnaire-file",
+        help="Optional questionnaire JSON path.",
+    ),
+    requirements_index: str = typer.Option(
+        "",
+        "--requirements-index",
+        help="Optional requirements index to enrich mapped controls and standards.",
+    ),
+    hook_output: str = typer.Option(
+        "",
+        "--hook-output",
+        help="Optional path to write integration hook payload JSON.",
+    ),
+    policy_pack: str = typer.Option(
+        "",
+        "--policy-pack",
+        help="Optional YAML policy pack file with custom rules.",
+    ),
+    default_policies: bool = typer.Option(
+        True,
+        "--default-policies/--no-default-policies",
+        help="Include built-in policy rules when evaluating a custom policy pack.",
+    ),
+) -> None:
+    """Run policy-as-code checks and produce integration-ready payload."""
+    validate_company_description(company_description)
+    questionnaire: dict[str, dict[str, str]] = {}
+    if questionnaire_file.strip():
+        questionnaire = load_questionnaire_file(questionnaire_file.strip())
+
+    assessment = assess_company_risk(
+        company_description,
+        questionnaire_context=questionnaire,
+        requirements_index=requirements_index.strip(),
+    )
+    try:
+        results = evaluate_policy_checks(
+            assessment,
+            questionnaire,
+            policy_pack_path=policy_pack.strip(),
+            include_default=default_policies,
+        )
+    except ValueError as exc:
+        render_error("Policy Pack Error", str(exc))
+        raise typer.Exit(code=1)
+    gate = policy_gate_status(results)
+
+    table = Table(
+        title="Policy-as-Code Checks",
+        box=box.ROUNDED,
+        show_lines=True,
+        header_style="bold cyan",
+    )
+    table.add_column("Policy", style="bold white")
+    table.add_column("Severity", style="yellow")
+    table.add_column("Status", style="green")
+    table.add_column("Rationale", style="magenta")
+
+    for result in results:
+        color = "green" if result.status == "pass" else "red"
+        table.add_row(
+            f"{result.policy_id} - {result.title}",
+            result.severity.upper(),
+            f"[{color}]{result.status.upper()}[/{color}]",
+            result.rationale,
+        )
+
+    console.print(table)
+    render_info(
+        "Policy Gate",
+        f"Gate status: [bold]{gate.upper()}[/bold] (risk: {assessment.risk_level}, residual: {assessment.residual_risk}/100).",
+    )
+
+    if hook_output.strip():
+        payload = build_integration_hook_payload("policy_check.completed", assessment, results)
+        saved = write_hook_payload(hook_output.strip(), payload)
+        render_info("Integration Hook Payload", f"Saved hook payload to `{saved}`.")
+
+
+@app.command("governance-submit")
+def governance_submit(
+    assessment_file: str = typer.Argument(..., help="Path to cached assessment JSON payload."),
+    requested_by: str = typer.Option(..., "--requested-by", help="Requester identity."),
+    approver: list[str] = typer.Option(
+        ...,
+        "--approver",
+        help="Approver identity (repeat option for multiple approvers).",
+    ),
+    trail_file: str = typer.Option(
+        "assessments/governance_trails.jsonl",
+        "--trail-file",
+        help="Governance trail JSONL path.",
+    ),
+) -> None:
+    """Create governance workflow entry and approval trail."""
+    path = Path(assessment_file).expanduser().resolve()
+    if not path.exists():
+        render_error("Assessment Not Found", f"No file at `{path}`.")
+        raise typer.Exit(code=1)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        render_error("Assessment Read Error", f"Could not parse `{path}` as JSON.")
+        raise typer.Exit(code=1)
+
+    deterministic = payload.get("deterministic", {}) if isinstance(payload, dict) else {}
+    if not isinstance(deterministic, dict):
+        deterministic = {}
+
+    trail = create_governance_trail(
+        requested_by=requested_by,
+        approvers=approver,
+        assessment_ref=str(payload.get("cache_key", path.name)),
+        risk_level=str(deterministic.get("risk_level", "unknown")),
+        residual_risk=int(deterministic.get("residual_risk", 0)),
+        policy_gate="unknown",
+    )
+    trails = load_governance_trails(trail_file)
+    trails.append(trail)
+    saved = save_governance_trails(trail_file, trails)
+    render_info(
+        "Governance Trail Created",
+        (
+            f"Trail ID: {trail.trail_id}\n"
+            f"Status: {trail.status}\n"
+            f"Approvers: {', '.join(trail.approvers) or 'none'}\n"
+            f"Stored at: {saved}"
+        ),
+    )
+
+
+@app.command("governance-approve")
+def governance_approve(
+    trail_id: str = typer.Argument(..., help="Governance trail id."),
+    actor: str = typer.Option(..., "--actor", help="Approver/reviewer identity."),
+    decision: str = typer.Option(
+        ...,
+        "--decision",
+        help="Decision: approve or reject.",
+    ),
+    comment: str = typer.Option("", "--comment", help="Optional decision note."),
+    trail_file: str = typer.Option(
+        "assessments/governance_trails.jsonl",
+        "--trail-file",
+        help="Governance trail JSONL path.",
+    ),
+) -> None:
+    """Record an approval or rejection decision on a governance trail."""
+    trails = load_governance_trails(trail_file)
+    index = None
+    for idx, trail in enumerate(trails):
+        if trail.trail_id == trail_id:
+            index = idx
+            break
+    if index is None:
+        render_error("Trail Not Found", f"Could not find trail `{trail_id}`.")
+        raise typer.Exit(code=1)
+    try:
+        updated = record_governance_decision(
+            trails[index],
+            actor=actor,
+            decision=decision,
+            comment=comment,
+        )
+    except ValueError as exc:
+        render_error(
+            "Invalid Decision",
+            str(exc),
+            hint="Use --decision approve|reject. Finalized trails cannot be modified.",
+        )
+        raise typer.Exit(code=1)
+
+    trails[index] = updated
+    saved = save_governance_trails(trail_file, trails)
+    render_info(
+        "Governance Decision Recorded",
+        (
+            f"Trail ID: {updated.trail_id}\n"
+            f"New status: {updated.status}\n"
+            f"Decisions recorded: {len(updated.decisions)}\n"
+            f"Stored at: {saved}"
+        ),
+    )
+
+
+@app.command("governance-list")
+def governance_list(
+    status: str = typer.Option(
+        "",
+        "--status",
+        help="Optional status filter: pending, approved, rejected.",
+    ),
+    trail_file: str = typer.Option(
+        "assessments/governance_trails.jsonl",
+        "--trail-file",
+        help="Governance trail JSONL path.",
+    ),
+) -> None:
+    """List governance workflow trails and approval states."""
+    trails = load_governance_trails(trail_file)
+    if status.strip():
+        normalized_status = status.strip().lower()
+        if normalized_status not in {"pending", "approved", "rejected"}:
+            render_error(
+                "Invalid Status Filter",
+                f"Unsupported status '{status}'.",
+                hint="Use --status pending|approved|rejected",
+            )
+            raise typer.Exit(code=1)
+        trails = [trail for trail in trails if trail.status.lower() == normalized_status]
+
+    if not trails:
+        render_info("Governance Trails", "No governance trails found.")
+        return
+
+    table = Table(
+        title="Governance Approval Trails",
+        box=box.ROUNDED,
+        show_lines=True,
+        header_style="bold cyan",
+    )
+    table.add_column("Trail ID", style="bold white")
+    table.add_column("Status", style="yellow")
+    table.add_column("Risk", style="green")
+    table.add_column("Requested By", style="magenta")
+    table.add_column("Approvers", style="white")
+    table.add_column("Decisions", justify="right", style="cyan")
+
+    for trail in trails:
+        table.add_row(
+            trail.trail_id,
+            trail.status,
+            f"{trail.risk_level} ({trail.residual_risk}/100)",
+            trail.requested_by,
+            ", ".join(trail.approvers) or "-",
+            str(len(trail.decisions)),
+        )
+    console.print(table)
 
 
 @app.command()

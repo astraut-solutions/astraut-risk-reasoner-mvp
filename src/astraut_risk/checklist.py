@@ -2,17 +2,95 @@
 
 from __future__ import annotations
 
+CHECKLIST_ROWS: list[dict[str, str]] = [
+    {
+        "control": "MFA coverage",
+        "domain": "Identity & Access",
+        "priority": "P1",
+        "target": "Admin, cloud, email, finance, and code-repo accounts",
+        "evidence": "Policy + enrollment export",
+        "cadence": "Weekly",
+    },
+    {
+        "control": "Least privilege + stale access review",
+        "domain": "Identity & Access",
+        "priority": "P1",
+        "target": "No standing excess admin rights",
+        "evidence": "Access review log",
+        "cadence": "Monthly",
+    },
+    {
+        "control": "Network segmentation baseline",
+        "domain": "Infrastructure",
+        "priority": "P1",
+        "target": "Production, staging, and admin zones segmented",
+        "evidence": "Firewall / SG ruleset snapshot",
+        "cadence": "Monthly",
+    },
+    {
+        "control": "Credential hygiene",
+        "domain": "Identity & Access",
+        "priority": "P1",
+        "target": "Password manager enforced, shared credentials removed",
+        "evidence": "Vault policy + shared account inventory",
+        "cadence": "Monthly",
+    },
+    {
+        "control": "Backup + restore validation",
+        "domain": "Resilience",
+        "priority": "P1",
+        "target": "Critical systems backed up and restore-tested",
+        "evidence": "Restore test report (RTO/RPO)",
+        "cadence": "Quarterly",
+    },
+    {
+        "control": "Public API protection",
+        "domain": "Application Security",
+        "priority": "P1",
+        "target": "Auth, rate-limit, schema validation, logging",
+        "evidence": "Gateway policy + alert rules",
+        "cadence": "Weekly",
+    },
+    {
+        "control": "Patch management",
+        "domain": "Vulnerability Management",
+        "priority": "P1",
+        "target": "OS, dependencies, and containers patched on SLA",
+        "evidence": "Patch SLA report",
+        "cadence": "Weekly",
+    },
+    {
+        "control": "Centralized monitoring",
+        "domain": "Detection",
+        "priority": "P2",
+        "target": "Central logs and high-signal auth alerts",
+        "evidence": "SIEM queries + alert routing",
+        "cadence": "Daily",
+    },
+    {
+        "control": "Incident response ownership",
+        "domain": "Resilience",
+        "priority": "P2",
+        "target": "Named decision/comms/technical owners",
+        "evidence": "IR runbook + tabletop notes",
+        "cadence": "Quarterly",
+    },
+    {
+        "control": "Vendor/supply chain review",
+        "domain": "Third-party Risk",
+        "priority": "P2",
+        "target": "Critical suppliers risk-assessed",
+        "evidence": "Vendor assessment register",
+        "cadence": "Quarterly",
+    },
+]
+
 CHECKLIST_ITEMS: list[str] = [
-    "Enable MFA for all admin, cloud, email, finance, and code-repo accounts.",
-    "Define least-privilege access and remove stale users every month.",
-    "Segment production, staging, and internal admin networks.",
-    "Enforce strong password manager use and disable shared credentials.",
-    "Back up critical systems daily and test restore quarterly.",
-    "Protect public APIs with auth, rate limits, schema validation, and logging.",
-    "Patch operating systems, dependencies, and containers on a fixed schedule.",
-    "Turn on centralized monitoring and alerting for suspicious auth activity.",
-    "Create a simple incident owner map: who decides, who communicates, who fixes.",
-    "Review vendor and supply-chain risk for payment, auth, and CI/CD services.",
+    (
+        f"{row['control']} ({row['domain']}, {row['priority']}): "
+        f"{row['target']} | Evidence: {row['evidence']} | Cadence: {row['cadence']}"
+    )
+    for row in CHECKLIST_ROWS
 ]
 
 

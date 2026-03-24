@@ -32,3 +32,10 @@ confidence_weights:
   signal_coverage: 0.25
   control_evidence_quality: 0.2
   input_specificity: 0.2
+
+requirement_risk_weights:
+  control_risk_weight: 1.0
+  data_sensitivity_weight: 1.0
+  exposure_level_weight: 1.0
+  compliance_gap_weight: 1.0
+  normalization_multiplier: 3.5

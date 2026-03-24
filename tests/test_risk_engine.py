@@ -1,7 +1,9 @@
 from typer.testing import CliRunner
 
 from astraut_risk.cli import app
+from astraut_risk.models import RequirementControl
 from astraut_risk.risk_engine import assess_company_risk
+from astraut_risk.security_requirements import RequirementsRepository, save_repository_index
 
 
 runner = CliRunner()
@@ -104,8 +106,22 @@ def test_inherent_and_residual_formula_consistency() -> None:
     )
 
     expected_inherent = round(max(0.0, min(100.0, assessment.likelihood * assessment.impact * 100.0)))
+    residual_adjustments = assessment.factor_snapshot.get("residual_adjustments", {})
+    uncertainty_multiplier = float(
+        residual_adjustments.get("uncertainty_multiplier", 1.0)
+        if isinstance(residual_adjustments, dict)
+        else 1.0
+    )
     expected_residual = round(
-        max(0.0, min(100.0, assessment.inherent_risk * (1.0 - assessment.control_reduction)))
+        max(
+            0.0,
+            min(
+                100.0,
+                assessment.inherent_risk
+                * (1.0 - assessment.control_reduction)
+                * uncertainty_multiplier,
+            ),
+        )
     )
 
     assert assessment.inherent_risk == expected_inherent
@@ -146,6 +162,9 @@ def test_sparse_input_still_returns_bounded_dimensions() -> None:
     assert 0 <= assessment.inherent_risk <= 100
     assert 0 <= assessment.residual_risk <= 100
     assert 0.0 <= assessment.confidence <= 1.0
+    assert isinstance(assessment.runtime_category_layers, list)
+    assert isinstance(assessment.explainability_payload, dict)
+    assert "scoring" in assessment.explainability_payload
 
 
 def test_contradictory_input_keeps_signal_and_penalizes_control_reduction() -> None:
@@ -276,3 +295,66 @@ def test_confidence_degrades_when_questionnaire_is_incomplete() -> None:
     full = assess_company_risk(description, questionnaire_context=full_context)
     sparse = assess_company_risk(description, questionnaire_context=sparse_context)
     assert sparse.confidence < full.confidence
+
+
+def test_assessment_with_requirements_root_handles_missing_repo(tmp_path) -> None:
+    assessment = assess_company_risk(
+        "SaaS startup with public API and IAM",
+        questionnaire_context={
+            "technical_architecture": {
+                "internet_exposed": "yes",
+                "public_api": "yes",
+                "mfa_enforced": "no",
+                "network_segmentation": "unknown",
+                "logging_monitoring": "unknown",
+                "backup_restore_tested": "unknown",
+            },
+            "maturity": {"incident_response_plan": "unknown"},
+        },
+        requirements_root=str(tmp_path / "missing"),
+    )
+    assert assessment.detected_security_domains
+    assert assessment.control_coverage_percent == 0.0
+
+
+def test_assessment_with_requirements_index_retrieves_controls(tmp_path) -> None:
+    repository = RequirementsRepository(
+        generated_at="2026-03-23T00:00:00Z",
+        source_root=str(tmp_path),
+        documents=[],
+        controls=[
+            RequirementControl(
+                id="ctrl_cloud_1",
+                category="Cloud & SaaS",
+                mapped_layer="Cloud",
+                document_title="Cloud Controls",
+                document_version="1.0",
+                document_path="/tmp/15_Cloud/cloud.pdf",
+                control_text="Cloud IAM must enforce MFA for privileged users.",
+                control_text_en="Cloud IAM must enforce MFA for privileged users.",
+                keywords=["cloud_security", "iam"],
+                severity="high",
+                risk_weight=0.95,
+            )
+        ],
+    )
+    index = tmp_path / "requirements_index.json"
+    save_repository_index(repository, str(index))
+
+    assessment = assess_company_risk(
+        "SaaS startup on AWS with IAM and public API",
+        questionnaire_context={
+            "business": {"data_sensitivity": "high"},
+            "technical_architecture": {"internet_exposed": "yes", "public_api": "yes"},
+            "maturity": {"incident_response_plan": "no"},
+        },
+        requirements_index=str(index),
+    )
+    assert assessment.mapped_requirements
+    assert assessment.identified_requirement_risks
+    assert assessment.control_coverage_percent > 0.0
+    assert "requirements_retrieval" in assessment.factor_snapshot
+    assert assessment.factor_snapshot["requirements_retrieval"]["top_score"] > 0.0
+    assert assessment.mapped_requirements[0].retrieval_reason
+    assert assessment.runtime_category_layers
+    assert assessment.factor_snapshot["requirements_scoring_weights"]["normalization_multiplier"] > 0.0

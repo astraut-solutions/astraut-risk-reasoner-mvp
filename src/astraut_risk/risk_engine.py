@@ -13,6 +13,17 @@ from .control_map import CONTROL_MAP
 from .framework_mapping import framework_refs_for_signal
 from .models import InvestmentPriority, Recommendation, RiskAssessment, RiskSignal
 from .questionnaire import default_questionnaire, to_signal_hints
+from .runtime_mapping import build_runtime_category_layers
+from .explainability import build_explainability_payload
+from .security_requirements import (
+    derive_requirement_risks,
+    infer_stack_components,
+    ingest_requirements_repository,
+    load_repository_index,
+    match_controls_for_components,
+    repository_version_snapshot,
+    retrieve_controls_baseline,
+)
 
 
 @dataclass(frozen=True)
@@ -219,6 +230,16 @@ _DEFAULT_FACTOR_CONFIG: dict[str, dict[str, float]] = {
         "control_evidence_quality": 0.20,
         "input_specificity": 0.20,
     },
+    "requirement_risk_weights": {
+        "control_risk_weight": 1.0,
+        "data_sensitivity_weight": 1.0,
+        "exposure_level_weight": 1.0,
+        "compliance_gap_weight": 1.0,
+        "normalization_multiplier": 3.5,
+    },
+    "residual_adjustments": {
+        "unknown_answer_penalty": 0.60,
+    },
 }
 
 
@@ -310,6 +331,32 @@ def _questionnaire_value(questionnaire: dict[str, dict[str, str]], domain: str, 
     return questionnaire.get(domain, {}).get(field, "unknown")
 
 
+def _questionnaire_value_worst_case(
+    questionnaire: dict[str, dict[str, str]],
+    domain: str,
+    field: str,
+) -> str:
+    """Interpret unknown questionnaire values as pessimistic defaults."""
+    value = _questionnaire_value(questionnaire, domain, field)
+    if value != "unknown":
+        return value
+
+    worst_case: dict[tuple[str, str], str] = {
+        ("business", "company_size"): "enterprise",
+        ("business", "data_sensitivity"): "high",
+        ("compliance", "regulatory_profile"): "regulated",
+        ("technical_architecture", "internet_exposed"): "yes",
+        ("technical_architecture", "public_api"): "yes",
+        ("technical_architecture", "mfa_enforced"): "no",
+        ("technical_architecture", "network_segmentation"): "no",
+        ("technical_architecture", "logging_monitoring"): "no",
+        ("technical_architecture", "backup_restore_tested"): "no",
+        ("maturity", "incident_response_plan"): "no",
+        ("maturity", "identity_maturity"): "basic",
+    }
+    return worst_case.get((domain, field), value)
+
+
 def _signal_set(matched_signals: list[RiskSignal]) -> set[str]:
     return {signal.signal_id for signal in matched_signals}
 
@@ -346,9 +393,9 @@ def _compute_likelihood_factors(
     signal_weight_total: int,
 ) -> dict[str, float]:
     exposure = 0.20
-    if _questionnaire_value(questionnaire, "technical_architecture", "internet_exposed") == "yes":
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "internet_exposed") == "yes":
         exposure += 0.25
-    if _questionnaire_value(questionnaire, "technical_architecture", "public_api") == "yes" or "public_api" in signal_ids:
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "public_api") == "yes" or "public_api" in signal_ids:
         exposure += 0.35
     if "internet_facing_saas" in signal_ids or "exposed_admin" in signal_ids:
         exposure += 0.20
@@ -370,29 +417,29 @@ def _compute_likelihood_factors(
     threat_relevance_proxy = 0.25
     if "public_api" in signal_ids or "internet_facing_saas" in signal_ids:
         threat_relevance_proxy += 0.25
-    if _questionnaire_value(questionnaire, "compliance", "regulatory_profile") == "regulated":
+    if _questionnaire_value_worst_case(questionnaire, "compliance", "regulatory_profile") == "regulated":
         threat_relevance_proxy += 0.10
-    if _questionnaire_value(questionnaire, "business", "data_sensitivity") == "high":
+    if _questionnaire_value_worst_case(questionnaire, "business", "data_sensitivity") == "high":
         threat_relevance_proxy += 0.12
     if "unpatched_dependencies" in signal_ids or "no_dependency_scanning" in signal_ids:
         threat_relevance_proxy += 0.10
 
     identity_exposure = 0.22
-    if _questionnaire_value(questionnaire, "technical_architecture", "mfa_enforced") == "no" or "no_mfa" in signal_ids:
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "mfa_enforced") == "no" or "no_mfa" in signal_ids:
         identity_exposure += 0.38
     if "shared_accounts" in signal_ids or "no_least_privilege" in signal_ids:
         identity_exposure += 0.20
     if "stale_users" in signal_ids:
         identity_exposure += 0.10
-    if _questionnaire_value(questionnaire, "technical_architecture", "mfa_enforced") == "yes":
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "mfa_enforced") == "yes":
         identity_exposure -= 0.16
 
     complexity = 0.35
-    if _questionnaire_value(questionnaire, "technical_architecture", "mfa_enforced") == "yes":
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "mfa_enforced") == "yes":
         complexity += 0.20
-    if _questionnaire_value(questionnaire, "technical_architecture", "network_segmentation") == "yes":
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "network_segmentation") == "yes":
         complexity += 0.20
-    if _questionnaire_value(questionnaire, "technical_architecture", "logging_monitoring") == "yes":
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "logging_monitoring") == "yes":
         complexity += 0.08
     if "no_mfa" in signal_ids:
         complexity -= 0.20
@@ -414,20 +461,20 @@ def _compute_impact_factors(
     questionnaire: dict[str, dict[str, str]],
     signal_ids: set[str],
 ) -> dict[str, float]:
-    size = _questionnaire_value(questionnaire, "business", "company_size")
+    size = _questionnaire_value_worst_case(questionnaire, "business", "company_size")
     business_criticality = {
         "sme": 0.45,
         "mid_market": 0.65,
         "enterprise": 0.80,
     }.get(size, 0.50)
 
-    sensitivity = _questionnaire_value(questionnaire, "business", "data_sensitivity")
+    sensitivity = _questionnaire_value_worst_case(questionnaire, "business", "data_sensitivity")
     data_sensitivity = {
         "low": 0.25,
         "medium": 0.55,
         "high": 0.85,
     }.get(sensitivity, 0.50)
-    if _questionnaire_value(questionnaire, "compliance", "regulatory_profile") == "regulated":
+    if _questionnaire_value_worst_case(questionnaire, "compliance", "regulatory_profile") == "regulated":
         data_sensitivity = max(data_sensitivity, 0.75)
 
     privilege_level = 0.35
@@ -435,7 +482,7 @@ def _compute_impact_factors(
         privilege_level += 0.25
     if "exposed_admin" in signal_ids:
         privilege_level += 0.20
-    if _questionnaire_value(questionnaire, "technical_architecture", "mfa_enforced") == "no":
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "mfa_enforced") == "no":
         privilege_level += 0.08
 
     blast_radius = 0.30
@@ -447,20 +494,20 @@ def _compute_impact_factors(
         blast_radius += 0.12
     if "no_incident_plan" in signal_ids:
         blast_radius += 0.08
-    if _questionnaire_value(questionnaire, "technical_architecture", "network_segmentation") == "yes":
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "network_segmentation") == "yes":
         blast_radius -= 0.12
 
     regulatory_consequence = {
         "regulated": 0.80,
         "unregulated": 0.25,
-    }.get(_questionnaire_value(questionnaire, "compliance", "regulatory_profile"), 0.50)
+    }.get(_questionnaire_value_worst_case(questionnaire, "compliance", "regulatory_profile"), 0.50)
     if data_sensitivity >= 0.75:
         regulatory_consequence += 0.08
 
     customer_impact = 0.30
-    if _questionnaire_value(questionnaire, "technical_architecture", "public_api") == "yes" or "public_api" in signal_ids:
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "public_api") == "yes" or "public_api" in signal_ids:
         customer_impact += 0.30
-    if _questionnaire_value(questionnaire, "technical_architecture", "internet_exposed") == "yes":
+    if _questionnaire_value_worst_case(questionnaire, "technical_architecture", "internet_exposed") == "yes":
         customer_impact += 0.12
     if data_sensitivity >= 0.75:
         customer_impact += 0.18
@@ -468,7 +515,7 @@ def _compute_impact_factors(
         customer_impact += 0.08
     if "no_tested_backups" in signal_ids:
         customer_impact += 0.06
-    if _questionnaire_value(questionnaire, "maturity", "incident_response_plan") == "no":
+    if _questionnaire_value_worst_case(questionnaire, "maturity", "incident_response_plan") == "no":
         customer_impact += 0.10
 
     return {
@@ -499,11 +546,12 @@ def _control_profile(answer: str) -> dict[str, float]:
             "exception_rate": 0.20,
         }
     return {
-        "design": 0.45,
-        "operating_evidence": 0.35,
-        "coverage": 0.35,
-        "freshness": 0.30,
-        "exception_rate": 0.45,
+        # Unknown is evidence-weak and should not grant large implicit risk reduction.
+        "design": 0.22,
+        "operating_evidence": 0.16,
+        "coverage": 0.18,
+        "freshness": 0.14,
+        "exception_rate": 0.26,
     }
 
 
@@ -526,31 +574,31 @@ def _compute_control_reduction(
     control_specs = [
         (
             "mfa",
-            _questionnaire_value(questionnaire, "technical_architecture", "mfa_enforced"),
+            _questionnaire_value_worst_case(questionnaire, "technical_architecture", "mfa_enforced"),
             {"no_mfa", "shared_accounts", "weak_passwords"},
             True,
         ),
         (
             "segmentation",
-            _questionnaire_value(questionnaire, "technical_architecture", "network_segmentation"),
+            _questionnaire_value_worst_case(questionnaire, "technical_architecture", "network_segmentation"),
             {"no_segmentation", "flat_network", "exposed_admin"},
             True,
         ),
         (
             "logging_detection",
-            _questionnaire_value(questionnaire, "technical_architecture", "logging_monitoring"),
+            _questionnaire_value_worst_case(questionnaire, "technical_architecture", "logging_monitoring"),
             {"no_logging", "no_alerting", "no_centralized_monitoring"},
             True,
         ),
         (
             "backup_recovery",
-            _questionnaire_value(questionnaire, "technical_architecture", "backup_restore_tested"),
+            _questionnaire_value_worst_case(questionnaire, "technical_architecture", "backup_restore_tested"),
             {"no_tested_backups", "no_recovery_testing", "backups_not_isolated"},
             True,
         ),
         (
             "incident_response",
-            _questionnaire_value(questionnaire, "maturity", "incident_response_plan"),
+            _questionnaire_value_worst_case(questionnaire, "maturity", "incident_response_plan"),
             {"no_incident_plan"},
             True,
         ),
@@ -564,7 +612,7 @@ def _compute_control_reduction(
         profile = _control_profile(answer)
         penalty_count = len(signal_ids.intersection(penalty_signals))
         bonus = 0.0
-        if name == "mfa" and _questionnaire_value(questionnaire, "maturity", "identity_maturity") == "advanced":
+        if name == "mfa" and _questionnaire_value_worst_case(questionnaire, "maturity", "identity_maturity") == "advanced":
             bonus = 0.05
 
         adjusted_profile = _adjust_profile(profile, penalty_count=penalty_count, bonus=bonus)
@@ -668,6 +716,8 @@ def _risk_level(score: int) -> str:
 def assess_company_risk(
     company_description: str,
     questionnaire_context: dict[str, dict[str, str]] | None = None,
+    requirements_root: str = "",
+    requirements_index: str = "",
 ) -> RiskAssessment:
     """Run deterministic keyword-based risk assessment for SME narratives."""
     text = (company_description or "").strip()
@@ -717,9 +767,12 @@ def assess_company_risk(
         signal_ids,
         factor_config,
     )
-    residual_risk = int(
-        round(_clamp(inherent_risk * (1.0 - control_reduction_adjusted), 0.0, 100.0))
-    )
+    residual_before_uncertainty = _clamp(inherent_risk * (1.0 - control_reduction_adjusted), 0.0, 100.0)
+    known_answers, total_answers = _count_known_questionnaire_answers(questionnaire)
+    questionnaire_completeness = known_answers / max(1, total_answers)
+    unknown_penalty_weight = factor_config["residual_adjustments"]["unknown_answer_penalty"]
+    uncertainty_multiplier = 1.0 + ((1.0 - questionnaire_completeness) * unknown_penalty_weight)
+    residual_risk = int(round(_clamp(residual_before_uncertainty * uncertainty_multiplier, 0.0, 100.0)))
 
     confidence, confidence_factors = _compute_confidence(
         questionnaire,
@@ -789,9 +842,82 @@ def assess_company_risk(
         "confidence_weights": factor_config["confidence_weights"],
         "confidence_factors": {k: round(v, 4) for k, v in confidence_factors.items()},
         "signal_weight_total": signal_weight_total,
+        "requirements_calibration_enabled": bool(requirements_root.strip() or requirements_index.strip()),
+        "residual_adjustments": {
+            "questionnaire_completeness": round(questionnaire_completeness, 4),
+            "unknown_answer_penalty": unknown_penalty_weight,
+            "uncertainty_multiplier": round(uncertainty_multiplier, 4),
+            "residual_before_uncertainty": round(residual_before_uncertainty, 4),
+        },
     }
 
-    return RiskAssessment(
+    detected_domains = sorted(infer_stack_components(text, questionnaire))
+    mapped_requirements = []
+    identified_requirement_risks = []
+    applicable_standards: list[str] = []
+    control_coverage = 0.0
+    requirement_risk_score = 0.0
+    matched_controls_count = 0
+    retrieved_controls_count = 0
+    requirements_controls_total = 0
+    calibration_enabled = bool(requirements_root.strip() or requirements_index.strip())
+
+    if calibration_enabled:
+        if requirements_index.strip():
+            repository = load_repository_index(requirements_index.strip())
+        else:
+            repository = ingest_requirements_repository(requirements_root.strip())
+
+        factor_snapshot["requirements_version_snapshot"] = repository_version_snapshot(repository)
+
+        matched_controls = match_controls_for_components(repository.controls, set(detected_domains))
+        matched_controls_count = len(matched_controls)
+        retrieved_controls = retrieve_controls_baseline(
+            matched_controls,
+            query=text,
+            components=set(detected_domains),
+            limit=60,
+        )
+        retrieved_controls_count = len(retrieved_controls)
+        requirements_controls_total = len(repository.controls)
+
+        identified_requirement_risks, requirement_risk_score = derive_requirement_risks(
+            retrieved_controls,
+            questionnaire=questionnaire,
+            scoring_config=factor_config["requirement_risk_weights"],
+            limit=10,
+        )
+        mapped_requirements = retrieved_controls[:30]
+        applicable_standards = sorted(
+            {
+                tag
+                for control in retrieved_controls
+                for tag in control.compliance_tags
+            }
+        )
+        if retrieved_controls:
+            retrieval_scores = [control.retrieval_score for control in retrieved_controls]
+            factor_snapshot["requirements_retrieval"] = {
+                "avg_score": round(sum(retrieval_scores) / len(retrieval_scores), 4),
+                "top_score": round(max(retrieval_scores), 4),
+                "retrieved_with_reason": sum(1 for control in retrieved_controls if control.retrieval_reason),
+            }
+        if matched_controls:
+            control_coverage = round((len(retrieved_controls) / len(matched_controls)) * 100.0, 2)
+        else:
+            control_coverage = 0.0
+        factor_snapshot["requirements_risk_score"] = requirement_risk_score
+        factor_snapshot["requirements_controls_matched"] = matched_controls_count
+        factor_snapshot["requirements_controls_retrieved"] = retrieved_controls_count
+        factor_snapshot["requirements_controls_total"] = requirements_controls_total
+        factor_snapshot["requirements_scoring_weights"] = factor_config["requirement_risk_weights"]
+
+    runtime_category_layers = build_runtime_category_layers(
+        matched_signals=matched_signals,
+        mapped_requirements=mapped_requirements,
+    )
+
+    assessment = RiskAssessment(
         company_input=text,
         overall_score=residual_risk,
         risk_level=_risk_level(residual_risk),
@@ -815,4 +941,16 @@ def assess_company_risk(
         questionnaire=questionnaire,
         factor_snapshot=factor_snapshot,
         questionnaire_context=questionnaire,
+        detected_security_domains=detected_domains,
+        mapped_requirements=mapped_requirements,
+        identified_requirement_risks=identified_requirement_risks,
+        applicable_standards=applicable_standards,
+        control_coverage_percent=control_coverage,
+        requirements_calibration_enabled=calibration_enabled,
+        mapped_controls_count=matched_controls_count,
+        retrieved_controls_count=retrieved_controls_count,
+        requirements_controls_total=requirements_controls_total,
+        runtime_category_layers=runtime_category_layers,
     )
+    assessment.explainability_payload = build_explainability_payload(assessment)
+    return assessment
