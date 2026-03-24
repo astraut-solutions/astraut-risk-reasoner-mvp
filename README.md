@@ -10,8 +10,13 @@ This open-source MVP is intentionally simple:
 
 ## Quick Start
 
+Use a local virtual environment so the setup is reproducible and does not depend on
+system Python packages.
+
 ```bash
-pip install -e .
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
 astraut-risk demo
 ```
 
@@ -50,6 +55,7 @@ Web UI is deterministic-only (no API key required) and includes:
 - Mode-based question blocks + company context fields
 
 ```bash
+source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run web/app.py
 ```

@@ -111,3 +111,16 @@ def test_assess_with_web_parity_flags_runs(monkeypatch, tmp_path) -> None:
     )
     assert result.exit_code == 0
     assert "Risk Assessment Result" in result.stdout
+
+
+def test_help_includes_enterprise_commands() -> None:
+    result = runner.invoke(app, ["--help"])
+    assert result.exit_code == 0
+    for command in (
+        "control-delta",
+        "policy-check",
+        "governance-submit",
+        "governance-approve",
+        "governance-list",
+    ):
+        assert command in result.stdout

@@ -6,6 +6,7 @@ import csv
 import json
 import socket
 import sys
+from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
 
@@ -27,6 +28,14 @@ from .config import (
     get_groq_api_key,
     load_environment,
     mask_key,
+)
+from .enterprise import (
+    create_governance_trail,
+    evaluate_policy_checks,
+    load_governance_trails,
+    policy_gate_status,
+    record_governance_decision,
+    save_governance_trails,
 )
 from .models import RiskAssessment
 from .output import (
@@ -56,6 +65,10 @@ from .reasoning import (
     validate_model,
 )
 from .scenarios import SCENARIOS, get_scenario_description, list_scenarios
+from .security_requirements import (
+    compare_control_versions,
+    load_repository_index,
+)
 
 app = typer.Typer(
     help="Astraut Risk Reasoner: practical cybersecurity risk guidance for SMEs."
@@ -231,6 +244,31 @@ def _resolve_output_path(output: str, fmt: str, multi: bool) -> str | None:
     path = Path(output)
     stem = path.with_suffix("")
     return f"{stem}.{fmt}"
+
+
+def _load_assessment_reference(path: str) -> tuple[str, str, int, str]:
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("Assessment payload must be a JSON object.")
+
+    deterministic = payload.get("deterministic", {})
+    deterministic_data = deterministic if isinstance(deterministic, dict) else {}
+
+    assessment_ref = str(payload.get("cache_key") or Path(path).stem).strip()
+    risk_level = str(
+        deterministic_data.get("risk_level") or payload.get("risk_level") or "Unknown"
+    ).strip()
+
+    residual_raw = deterministic_data.get("residual_risk", payload.get("residual_risk", 0))
+    try:
+        residual_risk = int(residual_raw)
+    except (TypeError, ValueError):
+        residual_risk = 0
+
+    policy_gate = str(
+        payload.get("policy_gate_status") or payload.get("policy_gate") or "unknown"
+    ).strip()
+    return assessment_ref, risk_level, residual_risk, policy_gate
 
 
 
@@ -694,6 +732,232 @@ def demo() -> None:
     console.print(
         "[dim]Demo mode: static example output (no API key or network call required).[/dim]"
     )
+
+
+@app.command("control-delta")
+def control_delta(
+    previous_index: str = typer.Argument(..., help="Path to previous requirements index JSON."),
+    current_index: str = typer.Argument(..., help="Path to current requirements index JSON."),
+    output: str = typer.Option("", "--output", help="Optional JSON output file path."),
+) -> None:
+    """Compare two requirements indexes and show control-level deltas."""
+    previous = load_repository_index(previous_index)
+    current = load_repository_index(current_index)
+    delta = compare_control_versions(previous, current)
+
+    if output.strip():
+        out = Path(output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(delta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        render_info("Control Delta Exported", f"Saved delta report to `{out}`.")
+
+    summary = delta.get("summary", {})
+    table = Table(
+        title="Control Version Delta Summary",
+        box=box.ROUNDED,
+        show_lines=True,
+        header_style="bold cyan",
+    )
+    table.add_column("Metric", style="bold white")
+    table.add_column("Value", justify="right", style="yellow")
+    table.add_row("Added controls", str(summary.get("added_controls", 0)))
+    table.add_row("Removed controls", str(summary.get("removed_controls", 0)))
+    table.add_row(
+        "Version-changed controls", str(summary.get("version_changed_controls", 0))
+    )
+    console.print(table)
+
+
+@app.command("policy-check")
+def policy_check(
+    company_description: str = typer.Argument(
+        ..., help="Natural-language description used for deterministic assessment."
+    ),
+    policy_pack: str = typer.Option(
+        "",
+        "--policy-pack",
+        help="Optional custom policy pack YAML path.",
+    ),
+    default_policies: bool = typer.Option(
+        True,
+        "--default-policies/--no-default-policies",
+        help="Include built-in default policy checks.",
+    ),
+    questionnaire_file: str = typer.Option(
+        "",
+        "--questionnaire-file",
+        help="Optional questionnaire JSON path for richer policy context.",
+    ),
+    output: str = typer.Option(
+        "",
+        "--output",
+        help="Optional JSON output file path for policy results.",
+    ),
+) -> None:
+    """Run policy-as-code checks against a deterministic assessment."""
+    try:
+        validate_company_description(company_description)
+        questionnaire: dict[str, dict[str, str]] = {}
+        if questionnaire_file.strip():
+            questionnaire = load_questionnaire_file(questionnaire_file.strip())
+
+        assessment = assess_company_risk(
+            company_description,
+            questionnaire_context=questionnaire,
+        )
+        results = evaluate_policy_checks(
+            assessment,
+            questionnaire=questionnaire,
+            policy_pack_path=policy_pack,
+            include_default=default_policies,
+        )
+        gate = policy_gate_status(results)
+
+        table = Table(
+            title=f"Policy Checks (gate: {gate})",
+            box=box.ROUNDED,
+            show_lines=True,
+            header_style="bold cyan",
+        )
+        table.add_column("Policy ID", style="bold white")
+        table.add_column("Status", style="green")
+        table.add_column("Severity", style="yellow")
+        table.add_column("Title", style="magenta")
+        for item in results:
+            table.add_row(item.policy_id, item.status, item.severity, item.title)
+        console.print(table)
+
+        if output.strip():
+            payload = {
+                "gate_status": gate,
+                "results": [asdict(item) for item in results],
+            }
+            out = Path(output)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(
+                json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            render_info("Policy Exported", f"Saved policy results to `{out}`.")
+    except (InvalidInputError, ValueError) as exc:
+        render_error("Policy Check Error", str(exc))
+        raise typer.Exit(code=1)
+
+
+@app.command("governance-submit")
+def governance_submit(
+    assessment_path: str = typer.Argument(..., help="Assessment JSON file path."),
+    requested_by: str = typer.Option(..., "--requested-by", help="Requester identity."),
+    approvers: list[str] = typer.Option(
+        ...,
+        "--approver",
+        help="Approver identity (repeat --approver for multiple approvers).",
+    ),
+    trail_file: str = typer.Option(
+        "assessments/governance_trails.jsonl",
+        "--trail-file",
+        help="Governance JSONL storage file.",
+    ),
+) -> None:
+    """Create and persist a governance approval trail from an assessment payload."""
+    try:
+        assessment_ref, risk_level, residual_risk, policy_gate = _load_assessment_reference(
+            assessment_path
+        )
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        render_error("Governance Submit Error", str(exc))
+        raise typer.Exit(code=1)
+
+    trail = create_governance_trail(
+        requested_by=requested_by,
+        approvers=approvers,
+        assessment_ref=assessment_ref,
+        risk_level=risk_level,
+        residual_risk=residual_risk,
+        policy_gate=policy_gate,
+    )
+    trails = load_governance_trails(trail_file)
+    trails.append(trail)
+    save_governance_trails(trail_file, trails)
+    render_info("Governance Trail Created", f"trail_id={trail.trail_id} status={trail.status}")
+
+
+@app.command("governance-approve")
+def governance_approve(
+    trail_id: str = typer.Argument(..., help="Governance trail id."),
+    actor: str = typer.Option(..., "--actor", help="Approver actor id."),
+    decision: str = typer.Option(..., "--decision", help="approve or reject"),
+    comment: str = typer.Option("", "--comment", help="Optional decision rationale."),
+    trail_file: str = typer.Option(
+        "assessments/governance_trails.jsonl",
+        "--trail-file",
+        help="Governance JSONL storage file.",
+    ),
+) -> None:
+    """Record an approval/rejection event for a governance trail."""
+    trails = load_governance_trails(trail_file)
+    selected = next((item for item in trails if item.trail_id == trail_id), None)
+    if selected is None:
+        render_error("Governance Approval Error", f"Trail not found: {trail_id}")
+        raise typer.Exit(code=1)
+
+    try:
+        updated = record_governance_decision(
+            selected,
+            actor=actor,
+            decision=decision,
+            comment=comment,
+        )
+    except ValueError as exc:
+        render_error("Governance Approval Error", str(exc))
+        raise typer.Exit(code=1)
+
+    save_governance_trails(trail_file, trails)
+    render_info(
+        "Governance Trail Updated",
+        f"trail_id={updated.trail_id} status={updated.status}",
+    )
+
+
+@app.command("governance-list")
+def governance_list(
+    status: str = typer.Option("", "--status", help="Optional status filter."),
+    trail_file: str = typer.Option(
+        "assessments/governance_trails.jsonl",
+        "--trail-file",
+        help="Governance JSONL storage file.",
+    ),
+) -> None:
+    """List governance trails, optionally filtered by status."""
+    trails = load_governance_trails(trail_file)
+    normalized = status.strip().lower()
+    if normalized:
+        trails = [item for item in trails if item.status.lower() == normalized]
+
+    table = Table(
+        title="Governance Trails",
+        box=box.ROUNDED,
+        show_lines=True,
+        header_style="bold cyan",
+    )
+    table.add_column("Trail ID", style="bold white")
+    table.add_column("Status", style="green")
+    table.add_column("Requested By", style="yellow")
+    table.add_column("Assessment Ref", style="magenta")
+    table.add_column("Approvers", style="cyan")
+
+    if not trails:
+        table.add_row("-", "none", "-", "-", "-")
+    else:
+        for item in trails:
+            table.add_row(
+                item.trail_id,
+                item.status,
+                item.requested_by,
+                item.assessment_ref,
+                ", ".join(item.approvers) or "-",
+            )
+    console.print(table)
 
 
 @scenario_app.command("list")

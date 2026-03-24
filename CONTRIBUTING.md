@@ -25,6 +25,12 @@ make test
 3. Update docs for user-facing changes.
 4. Open a pull request with a clear summary and validation steps.
 
+## Release Hygiene
+
+1. Cut releases from a clean working tree.
+2. Verify `make lint` and `make test` pass before tagging.
+3. Avoid shipping uncommitted local changes or secrets in release artifacts.
+
 ## Reporting Issues
 
 Use GitHub issue templates for bugs, features, and security concerns.
