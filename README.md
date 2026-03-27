@@ -15,7 +15,7 @@ This open-source MVP is intentionally simple:
     <img
       src="./demo/astraut-risk-reasoner-mvp.gif"
       alt="Astraut Risk Reasoner demo"
-      width="1200"
+      width="1060"
     />
   </a>
 </p>
