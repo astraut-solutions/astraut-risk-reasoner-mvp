@@ -13,12 +13,14 @@ def test_compose_assessment_markdown_includes_risk_dimensions() -> None:
     assert "Inherent Risk:" in markdown
     assert "Residual Risk:" in markdown
     assert "Confidence:" in markdown
+    assert "Legend:" in markdown
 
 
 def test_compose_assessment_markdown_includes_required_report_sections() -> None:
     assessment = assess_company_risk("Small startup with basic controls")
     markdown = compose_assessment_markdown(assessment)
-    assert "## Identified Risks" in markdown
+    assert "## Current Risks" in markdown
+    assert "## Key Risk Signals" in markdown
     assert "## Recommended Actions" in markdown
 
 
@@ -39,7 +41,9 @@ def test_compose_assessment_markdown_includes_vulnerability_control_mitigation_d
         "SaaS with public API, no MFA, no segmentation, no logging, and no tested backups"
     )
     markdown = compose_assessment_markdown(assessment)
-    assert "## Identified Risks" in markdown
+    assert "## Key Risk Signals" in markdown
     assert "## Key Control Gaps" in markdown
     assert "## Recommended Actions" in markdown
     assert "Cascading Worst-Case Projection:" in markdown
+    assert "Current risks:" in markdown
+    assert "Control gaps:" in markdown

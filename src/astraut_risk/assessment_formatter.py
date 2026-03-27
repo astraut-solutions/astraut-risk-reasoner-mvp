@@ -18,7 +18,7 @@ _METHOD_SECTION = (
 )
 
 _REQUIRED_REPORT_SECTIONS = (
-    "Identified Risks",
+    "Key Risk Signals",
     "Recommendations",
 )
 
@@ -62,6 +62,29 @@ def _worst_case_projection(assessment: RiskAssessment) -> int:
     no_controls = sum(no_control_flags)
     uplift = min(35, int(round(signal_weight_total * 0.18)) + (no_controls * 2))
     return min(100, assessment.overall_score + uplift)
+
+
+def _rating_legend() -> str:
+    return "Legend: 0-20 Low, 21-45 Moderate, 46-70 High, 71-100 Critical"
+
+
+def _format_risk_items(items: list[str], empty_message: str) -> list[str]:
+    if not items:
+        return [empty_message]
+    return [f"{idx}. {item}" for idx, item in enumerate(items, start=1)]
+
+
+def _format_signal_items(assessment: RiskAssessment) -> list[str]:
+    if not assessment.matched_signals:
+        return ["1. No explicit high-confidence vulnerabilities detected from the current description."]
+    return [
+        f"{idx}. {signal.label} ({_severity_from_signal_weight(signal.weight)} severity)"
+        for idx, signal in enumerate(assessment.matched_signals, start=1)
+    ]
+
+
+def _signal_labels(assessment: RiskAssessment) -> list[str]:
+    return [signal.label for signal in assessment.matched_signals]
 
 
 def extract_markdown_sections(content: str) -> dict[str, str]:
@@ -278,7 +301,7 @@ def build_required_report_sections(assessment: RiskAssessment) -> dict[str, list
         ]
 
     return {
-        "Identified Risks": identified_risks_lines,
+        "Key Risk Signals": identified_risks_lines,
         "Recommendations": recommendation_lines,
     }
 
@@ -391,41 +414,56 @@ def compose_assessment_markdown(
         if assessment.investment_priorities
         else ["- Validate baseline controls with real configuration evidence."]
     )
-    identified_risks_lines = (
-        [
-            f"{idx}. {signal.label} ({_severity_from_signal_weight(signal.weight)} severity)"
-            for idx, signal in enumerate(assessment.matched_signals[:4], start=1)
-        ]
-        if assessment.matched_signals
-        else ["1. No explicit high-confidence vulnerabilities detected from the current description."]
+    identified_risks_lines = _format_signal_items(assessment)
+    current_risk_labels = _signal_labels(assessment)
+    control_gap_lines = _format_risk_items(
+        control_gaps,
+        "1. No explicit control gaps detected from input text.",
     )
 
     parts = [
         "## Overall Risk Score",
-        f"{assessment.overall_score}/100 ({assessment.risk_level})",
+        f"{assessment.overall_score}/100 ({assessment.risk_level}) - {_rating_legend()}",
         "",
         "## Executive Summary",
-        f"- Residual risk is **{assessment.residual_risk}/100** with **{int(round(assessment.confidence * 100))}%** confidence.",
-        f"- Current profile indicates **{len(assessment.matched_signals)} key risk signals** and **{len(control_gaps)} control gaps**.",
+        f"- Residual risk is **{assessment.residual_risk}/100** with **{int(round(assessment.confidence * 100))}%** confidence - {_rating_legend()}.",
+        (
+            "- Current risks: "
+            f"{'; '.join(top_risks)}"
+            if top_risks
+            else "- Current risks: No high-confidence risk signals were matched."
+        ),
+        (
+            "- Key risk signals: "
+            f"{'; '.join(current_risk_labels)}"
+            if current_risk_labels
+            else "- Key risk signals: No explicit high-confidence vulnerabilities detected from the current description."
+        ),
+        (
+            "- Control gaps: "
+            f"{'; '.join(control_gaps)}"
+            if control_gaps
+            else "- Control gaps: No explicit control gaps detected from input text."
+        ),
         "- Priority should be reducing identity, exposure, and recovery weaknesses in the next 7 days.",
         "",
         "## Risk Dimensions",
-        f"- Likelihood: {assessment.likelihood:.2f} ({int(round(assessment.likelihood * 100))}/100)",
-        f"- Impact: {assessment.impact:.2f} ({int(round(assessment.impact * 100))}/100)",
-        f"- Inherent Risk: {assessment.inherent_risk}/100",
-        f"- Control Reduction: {assessment.control_reduction:.2f} ({int(round(assessment.control_reduction * 100))}%)",
-        f"- Residual Risk: {assessment.residual_risk}/100",
-        f"- Cascading Worst-Case Projection: {_worst_case_projection(assessment)}/100",
-        f"- Confidence: {assessment.confidence:.2f} ({int(round(assessment.confidence * 100))}%)",
+        f"- Likelihood: {assessment.likelihood:.2f} ({int(round(assessment.likelihood * 100))}/100) - {_rating_legend()}",
+        f"- Impact: {assessment.impact:.2f} ({int(round(assessment.impact * 100))}/100) - {_rating_legend()}",
+        f"- Inherent Risk: {assessment.inherent_risk}/100 - {_rating_legend()}",
+        f"- Control Reduction: {assessment.control_reduction:.2f} ({int(round(assessment.control_reduction * 100))}%) - Legend: 0-100% Low to High control reduction",
+        f"- Residual Risk: {assessment.residual_risk}/100 - {_rating_legend()}",
+        f"- Cascading Worst-Case Projection: {_worst_case_projection(assessment)}/100 - {_rating_legend()}",
+        f"- Confidence: {assessment.confidence:.2f} ({int(round(assessment.confidence * 100))}%) - Legend: 0-20 Low, 21-45 Moderate, 46-70 High, 71-100 Very High",
         "",
-        "## Top 3 Risks",
-        *[f"{idx}. {risk}" for idx, risk in enumerate(top_risks[:3], start=1)],
+        "## Current Risks",
+        *[f"{idx}. {risk}" for idx, risk in enumerate(top_risks, start=1)],
         "",
-        "## Identified Risks",
+        "## Key Risk Signals",
         *identified_risks_lines,
         "",
         "## Key Control Gaps",
-        *[f"- {gap}" for gap in control_gaps[:5]],
+        *control_gap_lines,
     ]
     parts.extend(
         [
