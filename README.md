@@ -15,12 +15,16 @@ This open-source MVP is intentionally simple:
     <td align="center">
       <strong>Live product walkthrough</strong><br />
       <a href="./demo/astraut-risk-reasoner-mvp.mp4">
-        <img
-          src="./demo/astraut-risk-reasoner-mvp.gif"
-          alt="Astraut Risk Reasoner demo"
-          width="100%"
-          style="max-width: 920px; height: auto;"
-        />
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="./demo/astraut-risk-reasoner-mvp-dark.gif" />
+          <source media="(prefers-color-scheme: light)" srcset="./demo/astraut-risk-reasoner-mvp.gif" />
+          <img
+            src="./demo/astraut-risk-reasoner-mvp.gif"
+            alt="Astraut Risk Reasoner demo"
+            width="100%"
+            style="max-width: 920px; height: auto;"
+          />
+        </picture>
       </a>
       <br />
       Click the preview to open the full MP4 demo.
