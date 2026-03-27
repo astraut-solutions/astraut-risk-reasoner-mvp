@@ -10,15 +10,19 @@ This open-source MVP is intentionally simple:
 
 ## Demo
 
-<p align="center">
-  <a href="./demo/astraut-risk-reasoner-mvp.mp4">
-    <img
-      src="./demo/astraut-risk-reasoner-mvp.gif"
-      alt="Astraut Risk Reasoner demo"
-      width="1060"
-    />
-  </a>
-</p>
+<table align="center" cellspacing="0" cellpadding="10" border="1">
+  <tr>
+    <td>
+      <a href="./demo/astraut-risk-reasoner-mvp.mp4">
+        <img
+          src="./demo/astraut-risk-reasoner-mvp.gif"
+          alt="Astraut Risk Reasoner demo"
+          width="1060"
+        />
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## Quick Start
 
