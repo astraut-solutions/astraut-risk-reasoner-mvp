@@ -10,10 +10,9 @@ This open-source MVP is intentionally simple:
 
 ## Demo
 
-<video controls width="100%" src="./demo/astraut-risk-reasoner-mvp.mp4">
-  Your browser does not support embedded video. 
-  <a href="./demo/astraut-risk-reasoner-mvp.mp4">Open the demo video</a>.
-</video>
+[![Watch the demo video](./demo/astraut-risk-reasoner-mvp-thumb.png)](./demo/astraut-risk-reasoner-mvp.mp4)
+
+Click the preview to open the MP4 demo.
 
 ## Quick Start
 
