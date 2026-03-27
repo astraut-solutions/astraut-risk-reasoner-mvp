@@ -26,8 +26,6 @@ This open-source MVP is intentionally simple:
           />
         </picture>
       </a>
-      <br />
-      Click the preview to open the full MP4 demo.
     </td>
   </tr>
 </table>
