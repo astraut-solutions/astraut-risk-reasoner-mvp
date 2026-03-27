@@ -13,7 +13,6 @@ This open-source MVP is intentionally simple:
 <table align="center" width="100%" cellspacing="0" cellpadding="14" border="1">
   <tr>
     <td align="center">
-      <strong>Live product walkthrough</strong><br />
       <a href="./demo/astraut-risk-reasoner-mvp.mp4">
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="./demo/astraut-risk-reasoner-mvp-dark.gif" />
