@@ -8,6 +8,13 @@ This open-source MVP is intentionally simple:
 - practical recommendations
 - structured questionnaire (general / medium / full detailed)
 
+## Demo
+
+<video controls width="100%" src="./demo/astraut-risk-reasoner-mvp.mp4">
+  Your browser does not support embedded video. 
+  <a href="./demo/astraut-risk-reasoner-mvp.mp4">Open the demo video</a>.
+</video>
+
 ## Quick Start
 
 Use a local virtual environment so the setup is reproducible and does not depend on
