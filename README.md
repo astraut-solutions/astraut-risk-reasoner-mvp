@@ -10,9 +10,9 @@ This open-source MVP is intentionally simple:
 
 ## Demo
 
-[![Watch the demo video](./demo/astraut-risk-reasoner-mvp-thumb.png)](./demo/astraut-risk-reasoner-mvp.mp4)
+[![Watch the demo video](./demo/astraut-risk-reasoner-mvp.gif)](./demo/astraut-risk-reasoner-mvp.mp4)
 
-Click the preview to open the MP4 demo.
+Click the animated preview to open the MP4 demo.
 
 ## Quick Start
 
