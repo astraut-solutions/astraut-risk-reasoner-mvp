@@ -12,8 +12,6 @@ This open-source MVP is intentionally simple:
 
 [![Watch the demo video](./demo/astraut-risk-reasoner-mvp.gif)](./demo/astraut-risk-reasoner-mvp.mp4)
 
-Click the animated preview to open the MP4 demo.
-
 ## Quick Start
 
 Use a local virtual environment so the setup is reproducible and does not depend on
